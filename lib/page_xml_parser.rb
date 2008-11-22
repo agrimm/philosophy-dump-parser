@@ -1,5 +1,5 @@
-require 'rexml/document'
-
+require "rubygems"
+require "xml"
 require "page"
 
 class PageXmlParser
@@ -8,15 +8,19 @@ class PageXmlParser
   end
 
   def mainspace_pages
-    xml = REXML::Document.new(@page_xml_file)
+    xml = XML::Document.string(@page_xml_file.read)
     pages = []
 
-    xml.elements.each("*/page") do |page_element|
-      title_element = page_element.elements["title"]
-      title = title_element.text
+    xml.root.find("*[local-name()='page']").each do |page_element|
+      title, text = nil, nil
 
-      text_element = page_element.elements["revision/text"]
-      text = text_element.text
+      page_element.find("*[local-name()='title']").each do |title_element|
+        title = title_element.content
+      end
+
+      page_element.find("*/*[local-name()='text']").each do |text_element|
+        text = text_element.content
+      end
 
       page = Page.new_if_valid(title, text)
       pages << page unless page.nil?

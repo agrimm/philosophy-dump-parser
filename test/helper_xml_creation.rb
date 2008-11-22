@@ -63,14 +63,27 @@ class TestHelperXmlCreation
       </contributor>
       <minor />
       <comment>robot  Breyti: [[new:फिनल्यान्ड]]</comment>
-      <text xml:space=\"preserve\">{{Land
+      <text xml:space=\"preserve\">#{mainspace_page_revision_text_text}</text>
+    </revision>
+  </page>"
+  end
+
+  def mainspace_page_revision_text_text
+    "{{Land
 |nafn_á_frummáli=Suomen tasavalta&lt;br /&gt;Republiken Finland&lt;br /&gt;Lýðveldið Finnland
 |nafn_í_eignarfalli=Finnlands
 |fáni=Flag of Finland.svg
 |skjaldarmerki=Coat of arms of Finland.svg
-etc. etc.</text>
-    </revision>
-  </page>"
+etc. etc."
+  end
+
+  def expected_mainspace_page_revision_text_text
+    "{{Land
+|nafn_á_frummáli=Suomen tasavalta<br />Republiken Finland<br />Lýðveldið Finnland
+|nafn_í_eignarfalli=Finnlands
+|fáni=Flag of Finland.svg
+|skjaldarmerki=Coat of arms of Finland.svg
+etc. etc."
   end
 
   def non_mainspace_page

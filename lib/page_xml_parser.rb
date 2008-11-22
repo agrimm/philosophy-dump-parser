@@ -1,4 +1,5 @@
 require 'rexml/document'
+
 require "page"
 
 class PageXmlParser

@@ -1,4 +1,6 @@
 class Page
+  attr_accessor :text
+
   def initialize(title, id, text)
     raise unless self.class.valid?(title, id, text)
     @title, @id, @text = title, id, text

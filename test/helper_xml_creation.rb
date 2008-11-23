@@ -52,37 +52,76 @@ class TestHelperXmlCreation
     page_id = generate_page_id
     res = \
 "  <page>
-    <title>Finnland</title>
+    <title>Íslensk skáld</title>
     <id>#{page_id}</id>
     <revision>
-      <id>572242</id>
-      <timestamp>2008-11-07T23:59:21Z</timestamp>
+      <id>552134</id>
+      <timestamp>2008-09-30T10:04:49Z</timestamp>
       <contributor>
-        <username>Zorrobot</username>
-        <id>2956</id>
+        <username>Þórarinn Friðjónsson</username>
+        <id>1506</id>
       </contributor>
-      <minor />
-      <comment>robot  Breyti: [[new:फिनल्यान्ड]]</comment>
       <text xml:space=\"preserve\">#{mainspace_page_revision_text_text}</text>
     </revision>
-  </page>"
+  </page>
+"
   end
 
   def mainspace_page_revision_text_text
-    "{{Land
-|nafn_á_frummáli=Suomen tasavalta&lt;br /&gt;Republiken Finland&lt;br /&gt;Lýðveldið Finnland
-|nafn_í_eignarfalli=Finnlands
-|fáni=Flag of Finland.svg
-|skjaldarmerki=Coat of arms of Finland.svg
+    "'''Íslensk skáld og rithöfundar'''&lt;br&gt;
+Íslensk skáld eru æðimörg. Þeirra á meðal eru þessi:
+
+(Flokkun skálda á aldir fer hvorki eftir fæðingarári né dánarári, heldur er miðað við hvenær skáldin voru virkust og gáfu mest út)
+
+== 10. öld ==
+
+*[[Egill Skallagrímsson]]
+
+== 11. öld ==
+
+*[[Sighvatur Þórðarson]]
+
+== 12. öld ==
+
+*[[Einar Skúlason]]
+
+== 13. öld ==
+
+* [[Snorri Sturluson]]
+
+== 16. öld ==
+* [[Staðarhóls-Páll]] (Páll Jónsson) ''(d. 1598)''
+* [[Einar Sigurðsson í Eydölum]] ''(1539-1626)''
+
 etc. etc."
   end
 
   def expected_mainspace_page_revision_text_text
-    "{{Land
-|nafn_á_frummáli=Suomen tasavalta<br />Republiken Finland<br />Lýðveldið Finnland
-|nafn_í_eignarfalli=Finnlands
-|fáni=Flag of Finland.svg
-|skjaldarmerki=Coat of arms of Finland.svg
+    "'''Íslensk skáld og rithöfundar'''<br>
+Íslensk skáld eru æðimörg. Þeirra á meðal eru þessi:
+
+(Flokkun skálda á aldir fer hvorki eftir fæðingarári né dánarári, heldur er miðað við hvenær skáldin voru virkust og gáfu mest út)
+
+== 10. öld ==
+
+*[[Egill Skallagrímsson]]
+
+== 11. öld ==
+
+*[[Sighvatur Þórðarson]]
+
+== 12. öld ==
+
+*[[Einar Skúlason]]
+
+== 13. öld ==
+
+* [[Snorri Sturluson]]
+
+== 16. öld ==
+* [[Staðarhóls-Páll]] (Páll Jónsson) ''(d. 1598)''
+* [[Einar Sigurðsson í Eydölum]] ''(1539-1626)''
+
 etc. etc."
   end
 

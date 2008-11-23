@@ -53,6 +53,23 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_direct_link_to(page, nil)
   end
 
+  def test_link_chain_string_with_deadend
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
+    page_xml_parser = PageXmlParser.new(xml_file)
+    mainspace_pages = page_xml_parser.mainspace_pages
+    assert_equal "#{mainspace_pages[0].title} links to #{mainspace_pages[1].title}, which links to nothing.", mainspace_pages[0].link_chain_string
+  end
+
+  def test_link_chain_can_handle_infinite_loop
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements(test_helper_xml_creation_object.generate_pair_of_infinitely_looping_pages)
+    page_xml_parser = PageXmlParser.new(xml_file)
+    mainspace_pages = page_xml_parser.mainspace_pages
+    assert_equal "#{mainspace_pages[0].title} links to #{mainspace_pages[1].title}, which links to previously encountered #{mainspace_pages[0].title}.", mainspace_pages[0].link_chain_string
+  end
+
+
   def assert_expected_size(expected_size, array)
     assert_equal expected_size, array.size
   end

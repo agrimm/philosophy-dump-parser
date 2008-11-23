@@ -73,6 +73,12 @@ class TestHelperXmlCreation
     generate_mainspace_page({:title_text => title_text, :mainspace_page_revision_text_text => mainspace_page_revision_text_text_with_one_specified_link(title_text)})
   end
 
+  def generate_pair_of_infinitely_looping_pages
+    title_texts = [0,1].map {generate_random_title_text}
+    page_revision_text_texts = title_texts.map {|title_text| mainspace_page_revision_text_text_with_one_specified_link(title_text)}
+    pages = [0,1].map{|i| generate_mainspace_page({:mainspace_page_revision_text_text => page_revision_text_texts[i], :title_text => title_texts[1-i]}) }
+  end
+
   def generate_random_title_text
     "random title #{generate_page_id}"
   end

@@ -38,5 +38,28 @@ class Page
     end
   end
 
+  def immediate_link_string(current_link_chain)
+    if current_link_chain.include?(@direct_link)
+      "links to previously encountered #{@direct_link.title}"
+    elsif @direct_link
+      "links to #{@direct_link.title}"
+    else
+      "links to nothing"
+    end
+  end
+
+  def link_chain_string
+    link_chain = [self]
+    while (link_chain.last.direct_link and not (link_chain.include?(link_chain.last.direct_link)) )
+       link_chain << link_chain.last.direct_link
+    end
+    string = link_chain.first.title + " "
+    link_chain.each_with_index do |chain_item, index|
+      string << ", which " unless index == 0
+      string << chain_item.immediate_link_string(link_chain[0..index])
+    end
+    string << "."
+  end
+
 end
 

@@ -3,13 +3,21 @@ require 'stringio'
 class TestHelperXmlCreation
 
   def createXmlFile(number_mainspace_pages, number_non_mainspace_pages)
-    file = StringIO.new
-    file << xml_start
+    page_elements = []
     number_mainspace_pages.times do
-      file << mainspace_page
+      page_elements << mainspace_page
     end
     number_non_mainspace_pages.times do
-      file << non_mainspace_page
+      page_elements << non_mainspace_page
+    end
+    create_xml_file_given_page_elements(page_elements)
+  end
+
+  def create_xml_file_given_page_elements(page_elements)
+    file = StringIO.new
+    file << xml_start
+    page_elements.each do |page_element|
+      file << page_element
     end
     file << xml_end
     file.rewind
@@ -49,10 +57,35 @@ class TestHelperXmlCreation
   end
 
   def mainspace_page
+    generate_mainspace_page({})
+  end
+
+  def linked_to_mainspace_page
+    generate_mainspace_page({:title_text => linked_to_mainspace_page_title_text})
+  end
+
+  def linked_to_mainspace_page_title_text
+    "Egill Skallagrímsson"
+  end
+
+  def circular_reference_only_mainspace_page
+    title_text = generate_random_title_text
+    generate_mainspace_page({:title_text => title_text, :mainspace_page_revision_text_text => mainspace_page_revision_text_text_with_one_specified_link(title_text)})
+  end
+
+  def generate_random_title_text
+    "random title #{generate_page_id}"
+  end
+
+  def generate_mainspace_page(options)
+    defaults = {:mainspace_page_revision_text_text => self.mainspace_page_revision_text_text, :title_text=> self.mainspace_page_title_text}
+    options = defaults.merge(options)
     page_id = generate_page_id
+    title_text = options[:title_text]
+    mainspace_page_revision_text_text = options[:mainspace_page_revision_text_text]
     res = \
 "  <page>
-    <title>Íslensk skáld</title>
+    <title>#{title_text}</title>
     <id>#{page_id}</id>
     <revision>
       <id>552134</id>
@@ -65,6 +98,10 @@ class TestHelperXmlCreation
     </revision>
   </page>
 "
+  end
+
+  def mainspace_page_title_text
+    "Íslensk skáld"
   end
 
   def mainspace_page_revision_text_text
@@ -123,6 +160,10 @@ etc. etc."
 * [[Einar Sigurðsson í Eydölum]] ''(1539-1626)''
 
 etc. etc."
+  end
+
+  def mainspace_page_revision_text_text_with_one_specified_link(target)
+    "There's only one wikilink, and that's [[#{target}]]. There's a nice [[Image:picture.jpg]], but everything else is [[el:irrelevant]]"
   end
 
   def non_mainspace_page

@@ -34,7 +34,32 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_equal expected_text, actual_text
   end
 
+  def test_find_linked_article
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
+    page_xml_parser = PageXmlParser.new(xml_file)
+    mainspace_pages = page_xml_parser.mainspace_pages
+    first_page = mainspace_pages[0]
+    linked_to_page = mainspace_pages[1]
+    assert_direct_link_to(first_page, linked_to_page)
+  end
+
+  def test_dont_find_yourself
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.circular_reference_only_mainspace_page])
+    page_xml_parser = PageXmlParser.new(xml_file)
+    mainspace_pages = page_xml_parser.mainspace_pages
+    page = mainspace_pages.first
+    assert_direct_link_to(page, nil)
+  end
+
   def assert_expected_size(expected_size, array)
     assert_equal expected_size, array.size
   end
+
+  def assert_direct_link_to(originating_page, expected_target_page)
+    actual_target_page = originating_page.direct_link
+    assert_equal expected_target_page, actual_target_page
+  end
+
 end

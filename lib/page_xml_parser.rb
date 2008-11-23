@@ -25,6 +25,8 @@ class PageXmlParser
       page = Page.new_if_valid(title, text)
       pages << page unless page.nil?
     end
+
+    Page.build_links(pages)
     return pages
   end
 end

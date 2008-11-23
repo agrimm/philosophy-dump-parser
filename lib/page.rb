@@ -1,7 +1,7 @@
 require "wiki_text"
 
 class Page
-  attr_accessor :text, :title, :direct_link
+  attr_accessor :text, :direct_link
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)
@@ -28,21 +28,32 @@ class Page
     end
   end
 
+  #Title string - this is for display purposes, not for searching
+  def title_string
+    @title
+  end
+
+  #Does the page match the supplied title?
+  #(Handles the scenario of a lower case wikilink matching an article)
+  def title_matches?(title)
+    return (title.capitalize == @title or title == @title) #Internationalization issues
+  end
+
   def build_links(pages)
     wiki_text = WikiText.new(String(@text))
     linked_articles = wiki_text.linked_articles
     linked_articles.any? do |linked_article|
       @direct_link = pages.find do |page|
-        (page.title == linked_article and page.title != self.title) # 
+        (page.title_matches?(linked_article) and (not page.title_matches?(@title)))
       end
     end
   end
 
   def immediate_link_string(current_link_chain)
     if current_link_chain.include?(@direct_link)
-      "links to previously encountered #{@direct_link.title}"
+      "links to previously encountered #{@direct_link.title_string}"
     elsif @direct_link
-      "links to #{@direct_link.title}"
+      "links to #{@direct_link.title_string}"
     else
       "links to nothing"
     end
@@ -57,7 +68,7 @@ class Page
   end
 
   def link_chain_to_string(link_chain)
-    string = link_chain.first.title + " "
+    string = link_chain.first.title_string + " "
     link_chain.each_with_index do |chain_item, index|
       string << ", which " unless index == 0
       string << chain_item.immediate_link_string(link_chain[0..index])
@@ -90,7 +101,7 @@ class Page
     chain_ends_a = chain_ends.sort {|a,b| a[1]<=>b[1]}
     puts "Most common chain ending:"
     chain_ends_a.each do |page, frequency|
-      puts "#{page.title}\t#{frequency}"
+      puts "#{page.title_string}\t#{frequency}"
     end
   end
 

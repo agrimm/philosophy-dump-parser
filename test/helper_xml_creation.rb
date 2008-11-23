@@ -80,7 +80,7 @@ class TestHelperXmlCreation
   end
 
   def generate_random_title_text
-    "random title #{generate_page_id}"
+    "Random title #{generate_page_id}"
   end
 
   def generate_mainspace_page(options)

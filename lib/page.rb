@@ -48,17 +48,50 @@ class Page
     end
   end
 
-  def link_chain_string
+  def build_link_chain
     link_chain = [self]
     while (link_chain.last.direct_link and not (link_chain.include?(link_chain.last.direct_link)) )
        link_chain << link_chain.last.direct_link
     end
+    link_chain
+  end
+
+  def link_chain_to_string(link_chain)
     string = link_chain.first.title + " "
     link_chain.each_with_index do |chain_item, index|
       string << ", which " unless index == 0
       string << chain_item.immediate_link_string(link_chain[0..index])
     end
     string << "."
+  end
+
+  def link_chain
+    @link_chain ||= build_link_chain
+  end
+
+  def link_chain_string
+    return link_chain_to_string(link_chain)
+  end
+
+  def link_chain_end
+    link_chain.last.direct_link || link_chain.last
+  end
+
+  def self.analysis_output(pages)
+    chain_ends = {}
+    pages.each do |page|
+      puts page.link_chain_string
+      chain_end = page.link_chain_end
+      unless chain_ends[chain_end]
+        chain_ends[chain_end] = 0
+      end
+      chain_ends[chain_end] += 1
+    end
+    chain_ends_a = chain_ends.sort {|a,b| a[1]<=>b[1]}
+    puts "Most common chain ending:"
+    chain_ends_a.each do |page, frequency|
+      puts "#{page.title}\t#{frequency}"
+    end
   end
 
 end

@@ -15,11 +15,11 @@ class PageXmlParser
       title, text = nil, nil
 
       page_element.find("*[local-name()='title']").each do |title_element|
-        title = title_element.content
+        title = String(title_element.content)
       end
 
       page_element.find("*/*[local-name()='text']").each do |text_element|
-        text = text_element.content
+        text = String(text_element.content)
       end
 
       page = Page.new_if_valid(title, text)

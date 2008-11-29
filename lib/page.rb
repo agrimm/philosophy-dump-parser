@@ -1,7 +1,7 @@
 require "wiki_text"
 
 class Page
-  attr_accessor :text, :direct_link
+  attr_accessor :text, :title, :direct_link
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)
@@ -22,8 +22,11 @@ class Page
     return true
   end
 
-  def self.build_links(pages)
-    pages.each do |page|
+  def self.build_links(page_array)
+    pages = {}
+    page_array.each {|page| pages[page.title] = page}
+
+    pages.each_value do |page|
       page.build_links(pages)
     end
   end
@@ -43,9 +46,9 @@ class Page
     wiki_text = WikiText.new(String(@text))
     linked_articles = wiki_text.linked_articles
     linked_articles.any? do |linked_article|
-      @direct_link = pages.find do |page|
-        (page.title_matches?(linked_article) and (not page.title_matches?(@title)))
-      end
+      @direct_link = (pages[linked_article] or pages[linked_article.capitalize])
+      @direct_link = nil if @direct_link == self
+      @direct_link
     end
   end
 

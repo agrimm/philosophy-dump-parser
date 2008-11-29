@@ -54,6 +54,19 @@ class WikiText
     wiki_text
   end
 
+  #Get rid of hatnotes, as they're supposed to be ignored in get to philosophy http://en.wikipedia.org/wiki/Wikipedia:Get_to_Philosophy#Rules
+  def parse_hatnotes(wiki_text)
+    resulting_text = ""
+    hatnote_passed = false
+    wiki_text.each do |line|
+      hatnote_passed ||= (line =~ /^[^:].*\w/) #Doesn't start with a colon, has real text in it
+      if hatnote_passed or line =~ /^[^:]/
+        resulting_text << line
+      end
+    end
+    return resulting_text
+  end
+
   #Remove from wiki_text anything that could confuse the program
   def parse_wiki_text(wiki_text)
     wiki_text = parse_nowiki(wiki_text)
@@ -62,6 +75,7 @@ class WikiText
     wiki_text = parse_unpaired_tags(wiki_text)
     wiki_text = parse_non_direct_links(wiki_text)
     wiki_text = parse_external_links(wiki_text) #Has to come after parse_non_direct_links for now
+    wiki_text = parse_hatnotes(wiki_text)
     wiki_text
   end
 

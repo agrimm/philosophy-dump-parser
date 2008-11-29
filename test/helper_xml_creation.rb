@@ -1,4 +1,5 @@
 require 'stringio'
+require 'page'
 
 class TestHelperXmlCreation
 
@@ -207,6 +208,27 @@ IP-talan þín er $3. Vinsamlegast taktu það fram í fyrirspurnum þínum.</te
     @previous_page_id = @previous_page_id || 2
     @previous_page_id += 1
     return @previous_page_id
+  end
+end
+
+
+class TestHelperPageCreation
+  def initialize
+    @test_helper_xml_creation_object = TestHelperXmlCreation.new
+  end
+
+  def create_page(options = {})
+    defaults = {:title => random_title, :text=> random_text}
+    options = defaults.merge(options)
+    return Page.new(options[:title], options[:text])
+  end
+
+  def random_title
+    @test_helper_xml_creation_object.generate_random_title_text
+  end
+
+  def random_text
+    @test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
   end
 end
 

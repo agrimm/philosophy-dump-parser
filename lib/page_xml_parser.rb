@@ -2,7 +2,8 @@ require "rubygems"
 require "xml"
 require "page"
 
-class PageXmlParser
+  if false
+class LibXmlDocumentPageXmlParser
   def initialize(page_xml_file)
     @page_xml_file = page_xml_file
   end
@@ -36,4 +37,32 @@ class PageXmlParser
     return pages
   end
 end
+  end
+
+class LibXmlReaderPageXmlParser
+  def initialize(page_xml_file)
+    @page_xml_file = page_xml_file
+  end
+
+  def mainspace_pages
+    parser = XML::Reader.io(@page_xml_file)
+    pages = []
+    while (parser.read and not (parser.node_type == XML::Reader::TYPE_END_ELEMENT and parser.name == "mediawiki"))
+      if (parser.node_type == XML::Reader::TYPE_ELEMENT and parser.name == "title")
+        parser.read
+        title = parser.value
+      elsif (parser.node_type == XML::Reader::TYPE_ELEMENT and parser.name == "text")
+        parser.read
+        text = parser.value
+        page = Page.new_if_valid(title, text)
+        pages << page unless page.nil?
+      end
+    end
+    Page.build_links(pages)
+    return pages
+  end
+
+end
+
+PageXmlParser = LibXmlReaderPageXmlParser
 

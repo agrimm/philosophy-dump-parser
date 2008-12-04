@@ -1,0 +1,6 @@
+Parses Wikipedia dumps for the Get to Philosophy game, as seen at http://en.wikipedia.org/wiki/Wikipedia:Get_to_Philosophy
+
+Ultimately this will save data in a format suitable for loading into a Rails website, but until then, run bin/page_xml_parser_interface.rb on an XML file like simplewiki-20081029-pages-articles.xml
+
+To get such an XML file, go to http://download.wikimedia.org/backup-index.html and then choose your language edition, and download a dump that contains the latest revision (as opposed to all revisions) of all articles.
+

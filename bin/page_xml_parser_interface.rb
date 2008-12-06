@@ -4,6 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
 require "page_xml_parser"
 require "page"
+require "repository"
 
 class ProcessXmlFile
 
@@ -13,7 +14,8 @@ class ProcessXmlFile
       File.open(filename) do |xml_file|
         page_xml_parser = PageXmlParser.new(xml_file)
         mainspace_pages = page_xml_parser.mainspace_pages
-        puts Page.analysis_output_string(mainspace_pages)
+        repository = Repository.new(mainspace_pages)
+        puts repository.analysis_output_string
       end
     end
   end

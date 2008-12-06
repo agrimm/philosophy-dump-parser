@@ -6,6 +6,7 @@ require "test/unit"
 
 require "helper_xml_creation"
 require "page_xml_parser"
+require "repository"
 
 class TestPage < Test::Unit::TestCase
   def setup
@@ -71,18 +72,23 @@ class TestPage < Test::Unit::TestCase
   end
 
   def assert_page_link_chains_sorted_alphabetically(pages)
-    res = Page.analysis_output_string(pages)
+    repository = Repository.new(pages)
+    res = repository.analysis_output_string
     previous_title = nil
+    line_count = 0
     res.each_line do |line|
       break if line =~ /Most common chain ending:/
+      line_count += 1
       current_title = line.split("links to").first
       assert (previous_title.nil? or (previous_title < current_title)), "#{previous_title} was listed before #{current_title}"
       previous_title = current_title
     end
+    assert_equal pages.size, line_count
   end
 
   def assert_most_common_chain_endings_sorted_by_value(pages)
-    res = Page.most_common_chain_endings_string(pages)
+    repository = Repository.new(pages)
+    res = repository.most_common_chain_endings_string
     previous_value = nil
     res.split("\n")[1..-1].each do |line|
       current_value = Integer(line.split.last)
@@ -91,7 +97,8 @@ class TestPage < Test::Unit::TestCase
   end
 
   def assert_most_common_chain_endings_also_sorted_alphabetically(pages)
-    res = Page.most_common_chain_endings_string(pages)
+    repository = Repository.new(pages)
+    res = repository.most_common_chain_endings_string
     previous_value = nil
     previous_title = nil
     assert res.split("\n")[0] == "Most common chain ending:"

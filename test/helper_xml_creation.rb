@@ -230,5 +230,10 @@ class TestHelperPageCreation
   def random_text
     @test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
   end
+
+  def create_page_linking_to_pages(page_titles)
+    text = page_titles.map{|page_title| "[[#{page_title}]] and "}.join
+    create_page({:text => text})
+  end
 end
 

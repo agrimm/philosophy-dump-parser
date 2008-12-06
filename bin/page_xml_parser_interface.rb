@@ -13,7 +13,7 @@ class ProcessXmlFile
       File.open(filename) do |xml_file|
         page_xml_parser = PageXmlParser.new(xml_file)
         mainspace_pages = page_xml_parser.mainspace_pages
-        Page.analysis_output(mainspace_pages)
+        puts Page.analysis_output_string(mainspace_pages)
       end
     end
   end

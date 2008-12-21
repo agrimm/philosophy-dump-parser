@@ -37,6 +37,19 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to original_page, target_page
   end
 
+#Some testing exists in tc_page_xml_parsing.rb
+
+  def test_link_chain_without_loop
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    philosophy_page = test_helper_page_creation_object.create_page({:title => "Philosophy page", :text => "[[Looping page]]"})
+    looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
+    general_page = test_helper_page_creation_object.create_page_linking_to_pages("Philosophy page")
+    Page.build_links([philosophy_page, looping_page, general_page]) #Keep on forgetting this step!
+    expected_chain = [general_page, philosophy_page]
+    actual_chain = general_page.link_chain_without_loop
+    assert_equal expected_chain, actual_chain
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

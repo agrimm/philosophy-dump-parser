@@ -80,8 +80,27 @@ class Page
     string << "."
   end
 
+  def build_link_chain_without_loop
+    unless link_chain_enters_loop?
+      return link_chain
+    else
+      link_chain_without_loop = []
+      link_chain.each do |page|
+        link_chain_without_loop << page
+        if page == link_chain_end
+          break
+        end
+      end
+      return link_chain_without_loop
+    end
+  end
+
   def link_chain
     @link_chain ||= build_link_chain
+  end
+
+  def link_chain_without_loop
+    @link_chain_without_loop ||= build_link_chain_without_loop
   end
 
   def link_chain_string
@@ -90,6 +109,10 @@ class Page
 
   def link_chain_end
     link_chain.last.direct_link || link_chain.last
+  end
+
+  def link_chain_enters_loop?
+    link_chain.last.direct_link
   end
 
 end

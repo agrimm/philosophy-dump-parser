@@ -36,6 +36,12 @@ class TestRepository < Test::Unit::TestCase
     assert_most_common_chain_endings_also_sorted_alphabetically(pages)
   end
 
+  def test_can_count_pages
+    pages = Array.new(10).map {TestHelperPageCreation.new}
+    repository = Repository.new(pages)
+    assert_equal 10, repository.page_count
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output_string

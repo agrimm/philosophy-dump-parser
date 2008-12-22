@@ -38,12 +38,6 @@ class Page
     @title
   end
 
-  #Does the page match the supplied title?
-  #(Handles the scenario of a lower case wikilink matching an article)
-  def title_matches?(title)
-    return (title.capitalize == @title or title == @title) #Internationalization issues
-  end
-
   def build_links(pages)
     wiki_text = WikiText.new(String(@text))
     linked_articles = wiki_text.linked_articles

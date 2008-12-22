@@ -42,6 +42,17 @@ class TestRepository < Test::Unit::TestCase
     assert_equal 10, repository.page_count
   end
 
+  def test_can_list_most_linked_to_pages
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    target_page = test_helper_page_creation_object.create_page
+    linking_page = test_helper_page_creation_object.create_page_linking_to_pages([target_page.title])
+    pages = [target_page, linking_page]
+    Page.build_links(pages)
+    repository = Repository.new(pages)
+    expected_string = "1 pages link to #{target_page.title_string}\n"
+    assert_equal expected_string, repository.most_backlinks_string
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output_string

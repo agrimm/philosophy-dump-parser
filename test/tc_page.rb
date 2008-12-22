@@ -50,6 +50,17 @@ class TestPage < Test::Unit::TestCase
     assert_equal expected_chain, actual_chain
   end
 
+  def test_backlinks
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    target_page = test_helper_page_creation_object.create_page
+    linking_page = test_helper_page_creation_object.create_page_linking_to_pages([target_page.title])
+    Page.build_links([target_page, linking_page])
+    expected_backlinks_for_target_page = [linking_page]
+    expected_backlinks_for_linking_page = []
+    assert_equal expected_backlinks_for_target_page, target_page.backlinks
+    assert_equal expected_backlinks_for_linking_page, linking_page.backlinks
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

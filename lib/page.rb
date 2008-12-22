@@ -1,11 +1,12 @@
 require "wiki_text"
 
 class Page
-  attr_accessor :text, :title, :direct_link
+  attr_accessor :text, :title, :direct_link, :backlinks
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)
     @title, @text = title, text
+    @backlinks = []
   end
 
   def self.new_if_valid(title, text)
@@ -51,6 +52,7 @@ class Page
       @direct_link = nil if @direct_link == self
       @direct_link
     end
+    @direct_link.add_backlink(self) unless @direct_link.nil?
   end
 
   def immediate_link_string(current_link_chain)
@@ -113,6 +115,18 @@ class Page
 
   def link_chain_enters_loop?
     link_chain.last.direct_link
+  end
+
+  def add_backlink(page)
+    @backlinks << page
+  end
+
+  def backlinks_string
+    if @backlinks.empty?
+      return ""
+    else
+      return "#{@backlinks.size} pages link to #{title_string}"
+    end
   end
 
 end

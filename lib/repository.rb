@@ -3,6 +3,7 @@ class Repository
   def analysis_output_string
     res = all_link_chain_strings
     res += most_common_chain_endings_string
+    res += most_backlinks_string
     res += page_count_string
   end
 
@@ -44,5 +45,18 @@ class Repository
   def page_count_string
     res = "#{page_count} pages total."
   end
+
+  def most_backlinks_string
+    pages = @pages.sort_by {|page| page.backlinks.size}
+    res = ""
+    pages.each do |page|
+      addition = page.backlinks_string
+      unless addition.empty?
+        res << addition << "\n"
+      end
+    end
+    res
+  end
+
 
 end

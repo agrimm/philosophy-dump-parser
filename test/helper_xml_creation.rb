@@ -85,7 +85,7 @@ class TestHelperXmlCreation
   end
 
   def generate_mainspace_page(options)
-    defaults = {:mainspace_page_revision_text_text => self.mainspace_page_revision_text_text, :title_text=> self.mainspace_page_title_text}
+    defaults = {:mainspace_page_revision_text_text => self.mainspace_page_revision_text_text, :title_text=> self.generate_random_title_text}
     options = defaults.merge(options)
     page_id = generate_page_id
     title_text = options[:title_text]
@@ -105,10 +105,6 @@ class TestHelperXmlCreation
     </revision>
   </page>
 "
-  end
-
-  def mainspace_page_title_text
-    "Íslensk skáld"
   end
 
   def mainspace_page_revision_text_text

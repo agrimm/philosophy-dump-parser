@@ -26,7 +26,7 @@ class Page
   def self.build_links(page_array)
     pages = {}
     page_array.each {|page| pages[page.title] = page}
-    #raise unless page_array.size == pages.size #No two pages should have the same title, but the test example methods need to be cleaned up first
+    raise unless page_array.size == pages.size
 
     pages.each_value do |page|
       page.build_links(pages)

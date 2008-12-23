@@ -13,6 +13,7 @@ class TestRepository < Test::Unit::TestCase
     pages = Array.new(10).map {test_helper_page_creation_object.create_page}
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
+    Page.build_links(pages)
     assert_page_link_chains_sorted_alphabetically(pages)
   end
 
@@ -23,6 +24,7 @@ class TestRepository < Test::Unit::TestCase
     pages << popular_page
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
+    Page.build_links(pages)
     assert_most_common_chain_endings_sorted_by_value(pages)
   end
 
@@ -33,6 +35,7 @@ class TestRepository < Test::Unit::TestCase
     pages << popular_page
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
+    Page.build_links(pages)
     assert_most_common_chain_endings_also_sorted_alphabetically(pages)
   end
 

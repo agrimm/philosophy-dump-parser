@@ -1,7 +1,7 @@
 require "wiki_text"
 
 class Page
-  attr_accessor :text, :title, :direct_link, :backlinks
+  attr_accessor :text, :title, :backlinks
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)
@@ -36,6 +36,11 @@ class Page
   #Title string - this is for display purposes, not for searching
   def title_string
     @title
+  end
+
+  def direct_link
+    raise unless (@direct_link or defined?(@direct_link))
+    @direct_link
   end
 
   def build_links(pages)

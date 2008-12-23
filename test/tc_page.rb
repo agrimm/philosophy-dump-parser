@@ -50,6 +50,14 @@ class TestPage < Test::Unit::TestCase
     assert_equal expected_chain, actual_chain
   end
 
+  def test_asking_for_link_chains_without_building_links_throws_exception
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    philosophy_page = test_helper_page_creation_object.create_page({:title => "Philosophy page", :text => "[[Looping page]]"})
+    looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
+    general_page = test_helper_page_creation_object.create_page_linking_to_pages("Philosophy page")
+    assert_raise(RuntimeError) {philosophy_page.link_chain}
+  end
+
   def test_backlinks
     test_helper_page_creation_object = TestHelperPageCreation.new
     target_page = test_helper_page_creation_object.create_page

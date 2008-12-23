@@ -1,12 +1,13 @@
 require "wiki_text"
 
 class Page
-  attr_reader :text, :title, :backlinks
+  attr_reader :text, :title, :backlinks, :total_backlink_count
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)
     @title, @text = title, text
     @backlinks = []
+    @total_backlink_count = 0
   end
 
   def self.new_if_valid(title, text)
@@ -24,12 +25,26 @@ class Page
   end
 
   def self.build_links(page_array)
+    self.build_direct_links(page_array)
+    self.build_total_backlink_counts(page_array)
+  end
+
+  def self.build_direct_links(page_array)
     pages = {}
     page_array.each {|page| pages[page.title] = page}
     raise unless page_array.size == pages.size
 
     pages.each_value do |page|
       page.build_links(pages)
+    end
+  end
+
+  def self.build_total_backlink_counts(page_array)
+    page_array.each do |page|
+      linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
+      linked_to_pages.each do |linked_to_page|
+        linked_to_page.increment_total_backlink_count
+      end
     end
   end
 
@@ -126,6 +141,10 @@ class Page
     else
       return "#{@backlinks.size} pages link to #{title_string}"
     end
+  end
+
+  def increment_total_backlink_count
+    @total_backlink_count += 1
   end
 
 end

@@ -56,6 +56,21 @@ class TestRepository < Test::Unit::TestCase
     assert_equal expected_string, repository.most_backlinks_string
   end
 
+  def test_backlink_counts
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    philosophy_page = test_helper_page_creation_object.create_page({:title => "Philosophy page", :text => "[[Looping page]]"})
+    looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
+    general_pages = Array.new(10).map {test_helper_page_creation_object.create_page_linking_to_pages(["Philosophy page"])}
+    pages = general_pages + [philosophy_page, looping_page]
+    Page.build_links(pages)
+    philosophy_expected_backlink_count = pages.size - 2 #Looping page doesn't contribute to the count. This is probably bad.
+    looping_page_expected_backlink_count = 0 #Neither from philosophy or from looping page
+    general_pages_expected_backlink_count = 0
+    assert_equal philosophy_expected_backlink_count, philosophy_page.total_backlink_count
+    assert_equal looping_page_expected_backlink_count, looping_page.total_backlink_count
+    general_pages.each {|page| assert_equal general_pages_expected_backlink_count, page.total_backlink_count}
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output_string

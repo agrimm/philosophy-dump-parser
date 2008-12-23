@@ -1,7 +1,7 @@
 require "wiki_text"
 
 class Page
-  attr_accessor :text, :title, :backlinks
+  attr_reader :text, :title, :backlinks
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)

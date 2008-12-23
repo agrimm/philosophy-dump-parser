@@ -45,9 +45,9 @@ class TestPage < Test::Unit::TestCase
     looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
     general_page = test_helper_page_creation_object.create_page_linking_to_pages(["Philosophy page"])
     Page.build_links([philosophy_page, looping_page, general_page]) #Keep on forgetting this step!
-    expected_chain = [general_page, philosophy_page]
-    actual_chain = general_page.link_chain_without_loop
-    assert_equal expected_chain, actual_chain
+    assert_link_chain_without_loop_matches general_page, [general_page, philosophy_page]
+    assert_link_chain_without_loop_matches philosophy_page, [philosophy_page]
+    assert_link_chain_without_loop_matches looping_page, [looping_page] #This feels wrong
   end
 
   def test_asking_for_link_chains_without_building_links_throws_exception
@@ -72,6 +72,11 @@ class TestPage < Test::Unit::TestCase
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page
+  end
+
+  def assert_link_chain_without_loop_matches(originating_page, expected_chain)
+    actual_chain = originating_page.link_chain_without_loop
+    assert_equal expected_chain, actual_chain
   end
 
 end

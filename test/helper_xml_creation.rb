@@ -229,7 +229,7 @@ class TestHelperPageCreation
 
   def create_page_linking_to_pages(page_titles)
     warn "Wrong type" if page_titles.respond_to?(:to_str)
-    text = page_titles.map{|page_title| "[[#{page_title}]] and "}.join
+    text = page_titles.map{|page_title| "[[#{page_title}]]"}.join(" and ") + "."
     create_page({:text => text})
   end
 end

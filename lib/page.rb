@@ -61,6 +61,7 @@ class Page
   def build_links(pages)
     wiki_text = WikiText.new(String(@text))
     linked_articles = wiki_text.linked_articles
+    @direct_link = nil #Just to handle a scenario of linked_articles being empty
     linked_articles.any? do |linked_article|
       @direct_link = (pages[linked_article] or pages[linked_article.capitalize])
       @direct_link = nil if @direct_link == self

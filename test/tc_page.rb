@@ -69,6 +69,14 @@ class TestPage < Test::Unit::TestCase
     assert_equal expected_backlinks_for_linking_page, linking_page.backlinks
   end
 
+  def test_handle_non_linking_pages
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    page = test_helper_page_creation_object.create_page_linking_to_pages([])
+    Page.build_links([page])
+    assert_direct_link_to(page, nil)
+    assert_link_chain_without_loop_matches(page, [page])
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

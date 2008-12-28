@@ -67,6 +67,8 @@ class TestPage < Test::Unit::TestCase
     expected_backlinks_for_linking_page = []
     assert_equal expected_backlinks_for_target_page, target_page.backlinks
     assert_equal expected_backlinks_for_linking_page, linking_page.backlinks
+    assert_equal 1, target_page.direct_backlink_count
+    assert_equal 0, linking_page.direct_backlink_count
   end
 
   def test_handle_non_linking_pages

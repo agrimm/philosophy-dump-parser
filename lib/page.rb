@@ -136,6 +136,10 @@ class Page
     @backlinks << page
   end
 
+  def direct_backlink_count
+    @backlinks.size
+  end
+
   def backlinks_string
     if @backlinks.empty?
       return ""

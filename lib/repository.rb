@@ -8,12 +8,7 @@ class Repository
   end
 
   def all_link_chain_strings
-    pages = @pages.sort_by{|page| page.title_string}
-    res = ""
-    pages.each do |page|
-      res << page.link_chain_string << "\n"
-    end
-    res
+    res = do_reporting(:title_string, :link_chain_string)
   end
 
   def most_common_chain_endings_string
@@ -47,16 +42,17 @@ class Repository
   end
 
   def most_backlinks_string
-    pages = @pages.sort_by {|page| page.backlinks.size}
+    res = do_reporting(:direct_backlink_count, :backlinks_string)
+  end
+
+  def do_reporting(sorting_method, string_method)
+    pages = @pages.sort_by {|page| page.send(sorting_method)}
     res = ""
     pages.each do |page|
-      addition = page.backlinks_string
-      unless addition.empty?
-        res << addition << "\n"
-      end
+      addition = page.send(string_method)
+      res << addition << "\n" unless addition.empty?
     end
     res
   end
-
 
 end

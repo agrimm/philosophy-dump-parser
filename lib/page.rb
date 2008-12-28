@@ -152,5 +152,13 @@ class Page
     @total_backlink_count += 1
   end
 
+  def total_backlink_count_string
+    return "" if self.total_backlink_count == 0
+    res = "#{title_string}"
+    res << ", which links to #{direct_link.title_string}," if direct_link
+    res << " has #{total_backlink_count} backlinks"
+    return res
+  end
+
 end
 

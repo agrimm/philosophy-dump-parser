@@ -4,6 +4,7 @@ class Repository
     res = all_link_chain_strings
     res += most_common_chain_endings_string
     res += most_backlinks_string
+    res += most_total_backlinks_string
     res += page_count_string
   end
 
@@ -43,6 +44,10 @@ class Repository
 
   def most_backlinks_string
     res = do_reporting(:direct_backlink_count, :backlinks_string)
+  end
+
+  def most_total_backlinks_string
+    do_reporting(:total_backlink_count, :total_backlink_count_string)
   end
 
   def do_reporting(sorting_method, string_method)

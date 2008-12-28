@@ -71,6 +71,19 @@ class TestRepository < Test::Unit::TestCase
     general_pages.each {|page| assert_equal general_pages_expected_backlink_count, page.total_backlink_count}
   end
 
+  def test_backlink_count_reporting
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    philosophy_page = test_helper_page_creation_object.create_page({:title => "Philosophy page", :text => "[[Looping page]]"})
+    looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
+    popular_page = test_helper_page_creation_object.create_page_linking_to_pages(["Philosophy page"])
+    general_pages = Array.new(10).map {test_helper_page_creation_object.create_page_linking_to_pages([popular_page.title])}
+    pages = general_pages + [philosophy_page, looping_page, popular_page]
+    Page.build_links(pages)
+    expected_popular_page_string = "#{popular_page.title}, which links to Philosophy page, has 10 backlinks"
+    actual_popular_page_string = popular_page.total_backlink_count_string
+    assert_equal expected_popular_page_string, actual_popular_page_string
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output_string

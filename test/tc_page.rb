@@ -41,9 +41,8 @@ class TestPage < Test::Unit::TestCase
 
   def test_link_chain_without_loop
     test_helper_page_creation_object = TestHelperPageCreation.new
-    philosophy_page = test_helper_page_creation_object.create_page({:title => "Philosophy page", :text => "[[Looping page]]"})
-    looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
-    general_page = test_helper_page_creation_object.create_page_linking_to_pages(["Philosophy page"])
+    network = [ ["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], [nil, ["Philosophy page"]] ]
+    philosophy_page, looping_page, general_page = test_helper_page_creation_object.create_network(network)
     Page.build_links([philosophy_page, looping_page, general_page]) #Keep on forgetting this step!
     assert_link_chain_without_loop_matches general_page, [general_page, philosophy_page]
     assert_link_chain_without_loop_matches philosophy_page, [philosophy_page]
@@ -52,16 +51,15 @@ class TestPage < Test::Unit::TestCase
 
   def test_asking_for_link_chains_without_building_links_throws_exception
     test_helper_page_creation_object = TestHelperPageCreation.new
-    philosophy_page = test_helper_page_creation_object.create_page({:title => "Philosophy page", :text => "[[Looping page]]"})
-    looping_page = test_helper_page_creation_object.create_page({:title => "Looping page", :text => "[[Philosophy page]]"})
-    general_page = test_helper_page_creation_object.create_page_linking_to_pages(["Philosophy page"])
+    network = [ ["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], [nil, ["Philosophy page"]] ]
+    philosophy_page, looping_page, general_page = test_helper_page_creation_object.create_network(network)
     assert_raise(RuntimeError) {philosophy_page.link_chain}
   end
 
   def test_backlinks
     test_helper_page_creation_object = TestHelperPageCreation.new
-    target_page = test_helper_page_creation_object.create_page
-    linking_page = test_helper_page_creation_object.create_page_linking_to_pages([target_page.title])
+    network = [ ["Target page", [] ], [nil, ["Target page"]] ]
+    target_page, linking_page = test_helper_page_creation_object.create_network(network)
     Page.build_links([target_page, linking_page])
     expected_backlinks_for_target_page = [linking_page]
     expected_backlinks_for_linking_page = []
@@ -73,7 +71,9 @@ class TestPage < Test::Unit::TestCase
 
   def test_handle_non_linking_pages
     test_helper_page_creation_object = TestHelperPageCreation.new
-    page = test_helper_page_creation_object.create_page_linking_to_pages([])
+    network = [ [nil, [] ] ]
+    page, = test_helper_page_creation_object.create_network(network)
+
     Page.build_links([page])
     assert_direct_link_to(page, nil)
     assert_link_chain_without_loop_matches(page, [page])

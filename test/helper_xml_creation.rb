@@ -232,5 +232,15 @@ class TestHelperPageCreation
     text = page_titles.map{|page_title| "[[#{page_title}]]"}.join(" and ") + "."
     create_page({:text => text})
   end
+
+  #Create several pages with the specified links
+  def create_network(titles_and_links)
+    titles_and_links.map do |title, links|
+      text = links.map{|link| "[[#{link}]]"}.join(" and ") + "."
+      title = random_title if title.nil?
+      page = create_page({:title => title, :text => text})
+      page
+    end
+  end
 end
 

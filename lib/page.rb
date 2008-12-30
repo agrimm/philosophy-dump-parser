@@ -160,5 +160,16 @@ class Page
     return res
   end
 
+  #The number of backlinks merged by this page
+  def backlink_merge_count
+    counts_in_backlinks = @backlinks.map {|page| page.total_backlink_count}
+    indirect_backlink_total = counts_in_backlinks.inject(0) {|total, value| total + value}
+    largest_count_in_backlinks = (counts_in_backlinks.max or 0)
+    indirect_backlink_merging = indirect_backlink_total - largest_count_in_backlinks
+    direct_backlink_merging = [@backlinks.size - 1, 0].max
+    backlink_merge_count = indirect_backlink_merging + direct_backlink_merging
+    backlink_merge_count
+  end
+
 end
 

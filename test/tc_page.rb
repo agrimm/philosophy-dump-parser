@@ -79,6 +79,45 @@ class TestPage < Test::Unit::TestCase
     assert_link_chain_without_loop_matches(page, [page])
   end
 
+  def test_backlink_merge_count_for_direct_backlinks
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["merging page", []], [nil, ["merging page"]], [nil, ["merging page"]] ]
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    merging_page = pages.first
+    normal_page = pages[1]
+    assert_equal 1, merging_page.backlink_merge_count, "Can't produce the right answer for a page merging direct backlinks"
+    assert_equal 0, normal_page.backlink_merge_count, "Can't produce the right answer for a page with no backlinks"
+  end
+
+  def test_backlink_merge_count_for_indirect_backlinks
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]], ["popular page 2", ["philosophy page"]] ]
+    network += [[nil, ["popular page 1"]]] * 5
+    network += [[nil, ["popular page 2"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    philosophy_page = pages.first
+    popular_page_1 = pages[1]
+    popular_page_2 = pages[2]
+    #The following is just checking my own arithmetic, rather than testing backlink_merge_count
+    assert_equal 5, popular_page_1.total_backlink_count, "Calculation error by programmer"
+    assert_equal 10, popular_page_2.total_backlink_count, "Calculation error by programmer"
+    assert_equal 17, philosophy_page.total_backlink_count, "Calculation error by programmer"
+    #Six has been contributed to the total backlink count by popular page 1, and eleven by popular page 2
+    assert_equal 6, philosophy_page.backlink_merge_count, "Can't produce the right answer for a page merging indirect backlinks"
+  end
+
+  def test_backlink_merge_count_for_page_not_merging_anything
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]] ]
+    network += [[nil, ["popular page 1"]]] * 5
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    philosophy_page = pages.first
+    assert_equal 0, philosophy_page.backlink_merge_count, "Can't produce the right answer for a page that merely continues a chain without merging anything"
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

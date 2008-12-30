@@ -118,6 +118,24 @@ class TestPage < Test::Unit::TestCase
     assert_equal 0, philosophy_page.backlink_merge_count, "Can't produce the right answer for a page that merely continues a chain without merging anything"
   end
 
+  def test_backlink_merge_count_string
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]], ["popular page 2", ["philosophy page"]] ]
+    network += [[nil, ["popular page 1"]]] * 5
+    network += [[nil, ["popular page 2"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    philosophy_page = pages.first
+    philosophy_page_expected_string = "philosophy page has merged 6 backlinks"
+    philosophy_page_actual_string = philosophy_page.backlink_merge_count_string
+    assert_equal philosophy_page_expected_string, philosophy_page_actual_string
+
+    mergeless_page = pages.last
+    mergeless_page_expected_string = ""
+    mergeless_page_actual_string = mergeless_page.backlink_merge_count_string
+    assert_equal mergeless_page_expected_string, mergeless_page_actual_string, "Mergeless page doesn't have an empty string"
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

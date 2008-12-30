@@ -171,5 +171,9 @@ class Page
     backlink_merge_count
   end
 
+  def backlink_merge_count_string
+    return "" if (backlink_merge_count == 0)
+    return "#{title_string} has merged #{backlink_merge_count} backlinks"
+  end
 end
 

@@ -82,6 +82,26 @@ class TestRepository < Test::Unit::TestCase
     assert_equal expected_popular_page_string, actual_popular_page_string
   end
 
+  def test_merge_count_reporting
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]], ["popular page 2", ["philosophy page"]] ]
+    network += [[nil, ["popular page 1"]]] * 5
+    network += [[nil, ["popular page 2"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    philosophy_page = pages.first
+    popular_page_1 = pages[1]
+    popular_page_2 = pages[2]
+    repository = Repository.new(pages)
+
+    expected_report = ""
+    expected_report << popular_page_1.backlink_merge_count_string << "\n"
+    expected_report << philosophy_page.backlink_merge_count_string << "\n"
+    expected_report << popular_page_2.backlink_merge_count_string << "\n"
+    actual_report = repository.most_backlinks_merged_string
+    assert_equal expected_report, actual_report
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output_string

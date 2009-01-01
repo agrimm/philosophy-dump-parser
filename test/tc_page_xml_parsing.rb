@@ -32,6 +32,22 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_equal expected_text, actual_text
   end
 
+  def test_parse_out_quotations
+    quotation_containing_title = "&quot;Weird Al&quot; Yankovic"
+    quotation_exorcised_title = "\"Weird Al\" Yankovic"
+    assert_parsing_works_for_title(quotation_exorcised_title, quotation_containing_title)
+  end
+
+  def test_parse_out_ampersands
+    ampersand_containing_title = "Command &amp; Conquer"
+    ampersand_exorcised_title = "Command & Conquer"
+    assert_parsing_works_for_title(ampersand_exorcised_title, ampersand_containing_title)
+  end
+
+  #No testing here for less than signs or greater than signs. They aren't allowed in article titles.
+  # http://en.wikipedia.org/wiki/Wikipedia:Naming_conventions_(technical_restrictions)#Characters_totally_forbidden_in_page_titles
+  #However, test_get_text_contents tests less than and greater than in page text.
+
   def test_find_linked_article
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
@@ -74,6 +90,21 @@ class TestXmlParsing < Test::Unit::TestCase
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page
+  end
+
+  def assert_parsing_works_for_title(parsed_title, unparsed_title)
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    pages = create_pages_given_page_elements([test_helper_xml_creation_object.generate_mainspace_page({:title_text => unparsed_title})])
+    page = pages.first
+    assert_equal parsed_title, page.title, "Some characters weren't parsed out"
+  end
+
+  def create_pages_given_page_elements(page_elements)
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements(page_elements)
+    page_xml_parser = PageXmlParser.new(xml_file)
+    mainspace_pages = page_xml_parser.mainspace_pages
+    mainspace_pages
   end
 
 end

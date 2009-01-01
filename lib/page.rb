@@ -1,13 +1,14 @@
 require "wiki_text"
 
 class Page
-  attr_reader :text, :title, :backlinks, :total_backlink_count
+  attr_reader :title, :backlinks, :total_backlink_count
 
   def initialize(title, text)
     raise unless self.class.valid?(title, text)
-    @title, @text = title, text
+    @title = title
     @backlinks = []
     @total_backlink_count = 0
+    @wiki_text = WikiText.new(String(text))
   end
 
   def self.new_if_valid(title, text)
@@ -37,6 +38,7 @@ class Page
     pages.each_value do |page|
       page.build_links(pages)
     end
+    GC.start if pages.size > 20
   end
 
   def self.build_total_backlink_counts(page_array)
@@ -59,8 +61,7 @@ class Page
   end
 
   def build_links(pages)
-    wiki_text = WikiText.new(String(@text))
-    linked_articles = wiki_text.linked_articles
+    linked_articles = @wiki_text.linked_articles
     @direct_link = nil #Just to handle a scenario of linked_articles being empty
     linked_articles.any? do |linked_article|
       @direct_link = (pages[linked_article] or pages[linked_article.capitalize])
@@ -68,6 +69,7 @@ class Page
       @direct_link
     end
     @direct_link.add_backlink(self) unless @direct_link.nil?
+    @wiki_text = nil
   end
 
   def immediate_link_string(current_link_chain)

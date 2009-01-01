@@ -57,12 +57,12 @@ class Repository
 
   def do_reporting(sorting_method, string_method)
     pages = @pages.sort_by {|page| page.send(sorting_method)}
-    res = ""
+    res_strings = []
     pages.each do |page|
       addition = page.send(string_method)
-      res << addition << "\n" unless addition.empty?
+      res_strings << addition << "\n" unless addition.empty?
     end
-    res
+    res_strings.join
   end
 
 end

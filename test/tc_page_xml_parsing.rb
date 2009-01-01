@@ -19,7 +19,7 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_expected_size expected_number_mainspace_pages, mainspace_pages
   end
 
-  def test_get_text_contents
+  def dont_test_get_text_contents
     expected_number_mainspace_pages = 2
     number_non_mainspace_pages = 3
     test_helper_xml_creation_object = TestHelperXmlCreation.new

@@ -31,6 +31,8 @@ class ManuallyMadePageXmlParser
           pages << page unless page.nil?
           title, text = nil, nil
           end_of_page_text_found = false
+
+          GC.start if (pages.size % 1000 == 0)
         end
       end
     end

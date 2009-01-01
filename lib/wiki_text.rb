@@ -1,8 +1,10 @@
 #Wikipedia text document
 class WikiText
 
+  attr_reader :linked_articles
+
   def initialize(document_text)
-    @document_text = document_text
+    @linked_articles = calculate_linked_articles(document_text)
   end
 
   #Remove from MediaWiki text anything that is surrounded by <nowiki>
@@ -80,8 +82,8 @@ class WikiText
   end
 
   #Look for wikilinks in a piece of text
-  def linked_articles()
-    parsed_wiki_text = parse_wiki_text(String(@document_text))
+  def calculate_linked_articles(document_text)
+    parsed_wiki_text = parse_wiki_text(document_text)
     unparsed_match_arrays = parsed_wiki_text.scan(%r{\[\[([^\]\#\|]*)([^\]]*?)\]\]}im)
     parsed_wiki_article_titles = []
     unparsed_match_arrays.each do |unparsed_match_array|

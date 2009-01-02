@@ -7,6 +7,7 @@ class ManuallyMadePageXmlParser
   end
 
   def mainspace_pages
+    i = 0
     pages = []
     title, text_lines = nil, []
     end_of_page_text_found = false
@@ -29,12 +30,13 @@ class ManuallyMadePageXmlParser
 
         if end_of_page_text_found
           text = text_lines.join
+          i += 1
           page = Page.new_if_valid(title, text)
           pages << page unless page.nil?
           title, text_lines = nil, []
           end_of_page_text_found = false
-
-          GC.start if (rand < 0.0001)
+          STDERR <<  "#{i}\t#{Time.now}\n" if (i % 10000 == 0)
+          #GC.start if (i % 100000 == 0)
         end
       end
     end

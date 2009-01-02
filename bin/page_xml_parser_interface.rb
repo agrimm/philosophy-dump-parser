@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+require "rubygems"
+require "bleak_house"
+
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
 require "page_xml_parser"

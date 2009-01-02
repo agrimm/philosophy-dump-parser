@@ -10,6 +10,7 @@ class ManuallyMadePageXmlParser
     pages = []
     title, text_lines = nil, []
     end_of_page_text_found = false
+    #big_string = "a" * 100000
     while line = @page_xml_file.gets
       if match_data = /<title>(.*)<\/title>/.match(line)
         title = exorcise_ampersands(match_data[1])
@@ -27,27 +28,29 @@ class ManuallyMadePageXmlParser
         end
 
         if end_of_page_text_found
-          page = Page.new_if_valid(title, text_lines)
+          text = text_lines.join
+          page = Page.new_if_valid(title, text)
           pages << page unless page.nil?
           title, text_lines = nil, []
           end_of_page_text_found = false
 
-          GC.start if (pages.size % 100 == 0)
+          GC.start if (rand < 0.0001)
         end
       end
     end
-    STDERR << "Finished parsing"
+    #STDERR << "Finished parsing"
     Page.build_links(pages)
-    STDERR << "Built links"
+    #STDERR << "Built links"
     pages
   end
 
   def exorcise_ampersands(string)
     #Handle amp and quot, which is required, and less than and greater than, because unit tests already existed for that.
-    intermediate = string.gsub("&lt;", "<")
-    intermediate = intermediate.gsub("&gt;", ">")
-    intermediate = intermediate.gsub("&quot;", "\"")
-    intermediate = intermediate.gsub("&amp;", "&")
+    string.gsub!("&lt;", "<")
+    string.gsub!("&gt;", ">")
+    string.gsub!("&quot;", "\"")
+    string.gsub!("&amp;", "&")
+    string
   end
 
 end

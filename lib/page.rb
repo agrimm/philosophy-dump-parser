@@ -21,7 +21,7 @@ class Page
 
   def self.valid?(title, text)
     return false if title =~ /:/
-    return false if text.empty?
+    #return false if text.empty?
     return true
   end
 

@@ -6,13 +6,12 @@ class ManuallyMadePageXmlParser
     @page_xml_file = page_xml_file
   end
 
-  def mainspace_pages
+  def parse_pages(file)
     i = 0
     pages = []
     title, text_lines = nil, []
     end_of_page_text_found = false
-    #big_string = "a" * 100000
-    while line = @page_xml_file.gets
+    while line = file.gets
       if match_data = /<title>(.*)<\/title>/.match(line)
         title = exorcise_ampersands(match_data[1])
       else
@@ -35,11 +34,34 @@ class ManuallyMadePageXmlParser
           pages << page unless page.nil?
           title, text_lines = nil, []
           end_of_page_text_found = false
-          STDERR <<  "#{i}\t#{Time.now}\n" if (i % 10000 == 0)
+          #STDERR <<  "#{i}\t#{Time.now}\n" if (i % 10000 == 0)
           #GC.start if (i % 100000 == 0)
         end
       end
     end
+    pages
+  end
+
+  def create_dump
+    pages = parse_pages(@page_xml_file)
+    dump = Marshal.dump(pages)
+    File.open("dumpfile.bin", "w") do |f|
+      f.write(dump)
+    end
+  end
+
+  def load_dump
+    pages = nil
+    File.open("dumpfile.bin") do |f|
+      dump = f.read
+      pages = Marshal.load(dump)
+    end
+    pages
+  end
+
+  def mainspace_pages
+    create_dump
+    pages = load_dump
     #STDERR << "Finished parsing"
     Page.build_links(pages)
     #STDERR << "Built links"

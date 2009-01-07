@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "rubygems"
-require "bleak_house"
+#require "bleak_house"
 
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 

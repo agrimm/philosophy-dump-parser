@@ -38,29 +38,98 @@ class ManuallyMadePageXmlParser
     pages
   end
 
-  def create_dump
-    pages = parse_pages(@page_xml_file)
-    dump = Marshal.dump(pages)
-    File.open("dumpfile.bin", "w") do |f|
-      f.write(dump)
+  def break_into_subfiles(original_file)
+    subfile_number = 1
+    pages_so_far = 0
+    max_pages_per_file = 1
+    subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
+    while line = original_file.gets
+      subfile.write(line)
+      if line.include?("</page>")
+        pages_so_far += 1
+        if (pages_so_far % max_pages_per_file == 0)
+          subfile_number += 1
+          pages_so_far = 0
+          subfile.close
+          subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
+        end
+      end
+    end
+    subfile.close
+  end
+
+  def create_dump_given_subfile_number(subfile_number)
+    return unless File.exist?("temp/subfile#{subfile_number}.almostxml")
+
+    File.open("temp/subfile#{subfile_number}.almostxml") do |almost_xml_file|
+      pages = parse_pages(almost_xml_file)
+      dump = Marshal.dump(pages)
+      File.open("dumpfile#{subfile_number}.bin", "w") do |f|
+        f.write(dump)
+      end
     end
   end
 
-  def load_dump
-    pages = nil
-    File.open("dumpfile.bin") do |f|
-      dump = f.read
-      pages = Marshal.load(dump)
+  def create_dumps
+    break_into_subfiles(@page_xml_file)
+    @page_xml_file.close
+    1.upto(1000) do |subfile_number|
+      result = create_dump_given_subfile_number(subfile_number)
+    end
+  end
+
+  def load_dumps
+    pages = []
+    each_dumpfilename do |filename|
+      File.open(filename) do |f|
+        dump = f.read
+        pages += Marshal.load(dump)
+      end
     end
     pages
   end
 
+  def delete_intermediate_files
+    delete_dumpfiles
+    delete_almost_xml_subfiles
+  end
+
+  def each_dumpfilename
+    i = 0
+    while (i += 1)
+      filename = "dumpfile#{i}.bin"
+      break unless File.exist?(filename)
+      yield filename if block_given?
+    end
+  end
+
+  def delete_dumpfiles
+    each_dumpfilename do |filename|
+      File.delete(filename)
+    end
+  end
+
+  def each_almost_xml_subfilename
+    i = 0
+    while (i += 1)
+      filename = "temp/subfile#{i}.almostxml"
+      break unless File.exist?(filename)
+      yield filename if block_given?
+    end
+  end
+
+  def delete_almost_xml_subfiles
+    each_almost_xml_subfilename do |filename|
+      File.delete(filename)
+    end
+  end
+
   def mainspace_pages
-    create_dump
-    pages = load_dump
-    #STDERR << "Finished parsing"
+    delete_intermediate_files
+    create_dumps
+    pages = load_dumps
     Page.build_links(pages)
-    #STDERR << "Built links"
+    delete_intermediate_files
     pages
   end
 

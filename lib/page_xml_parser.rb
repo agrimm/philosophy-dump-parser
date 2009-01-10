@@ -39,6 +39,7 @@ class ManuallyMadePageXmlParser
   end
 
   def break_into_subfiles
+    delete_intermediate_files
     subfile_number = 1
     pages_so_far = 0
     max_pages_per_file = 1
@@ -72,7 +73,6 @@ class ManuallyMadePageXmlParser
   end
 
   def create_dumps
-    break_into_subfiles
     1.upto(1000) do |subfile_number|
       result = create_dump_given_subfile_number(subfile_number)
     end
@@ -124,12 +124,24 @@ class ManuallyMadePageXmlParser
     end
   end
 
-  def mainspace_pages
-    delete_intermediate_files
-    create_dumps
+  def build_links
     pages = load_dumps
     Page.build_links(pages)
     delete_intermediate_files
+    pages
+  end
+
+  def get_tasks
+    possible_tasks = [:break_into_subfiles, :create_dumps, :build_links]
+    tasks = possible_tasks[0..2]
+  end
+
+  def mainspace_pages
+    pages = []
+    tasks = get_tasks
+    break_into_subfiles if tasks.include?(:break_into_subfiles)
+    create_dumps if tasks.include?(:create_dumps)
+    pages = build_links if tasks.include?(:build_links)
     pages
   end
 

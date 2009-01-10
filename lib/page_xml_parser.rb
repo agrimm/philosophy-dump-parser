@@ -38,12 +38,12 @@ class ManuallyMadePageXmlParser
     pages
   end
 
-  def break_into_subfiles(original_file)
+  def break_into_subfiles
     subfile_number = 1
     pages_so_far = 0
     max_pages_per_file = 1
     subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
-    while line = original_file.gets
+    while line = @page_xml_file.gets
       subfile.write(line)
       if line.include?("</page>")
         pages_so_far += 1
@@ -56,6 +56,7 @@ class ManuallyMadePageXmlParser
       end
     end
     subfile.close
+    @page_xml_file.close
   end
 
   def create_dump_given_subfile_number(subfile_number)
@@ -71,8 +72,7 @@ class ManuallyMadePageXmlParser
   end
 
   def create_dumps
-    break_into_subfiles(@page_xml_file)
-    @page_xml_file.close
+    break_into_subfiles
     1.upto(1000) do |subfile_number|
       result = create_dump_given_subfile_number(subfile_number)
     end

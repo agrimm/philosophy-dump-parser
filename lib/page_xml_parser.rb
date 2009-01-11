@@ -1,9 +1,10 @@
-require "rubygems"
+require "yaml"
 require "page"
 
 class ManuallyMadePageXmlParser
-  def initialize(page_xml_file)
+  def initialize(page_xml_file, tasklist_filename = nil)
     @page_xml_file = page_xml_file
+    @tasks = TaskList.new(tasklist_filename)
   end
 
   def parse_pages(file)
@@ -42,7 +43,7 @@ class ManuallyMadePageXmlParser
     delete_intermediate_files
     subfile_number = 1
     pages_so_far = 0
-    max_pages_per_file = 1
+    max_pages_per_file = 10
     subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
     while line = @page_xml_file.gets
       subfile.write(line)
@@ -131,18 +132,18 @@ class ManuallyMadePageXmlParser
     pages
   end
 
-  def get_tasks
-    possible_tasks = [:break_into_subfiles, :create_dumps, :build_links]
-    tasks = possible_tasks[0..2]
-  end
-
   def mainspace_pages
     pages = []
-    tasks = get_tasks
-    break_into_subfiles if tasks.include?(:break_into_subfiles)
-    create_dumps if tasks.include?(:create_dumps)
-    pages = build_links if tasks.include?(:build_links)
+    break_into_subfiles if @tasks.include_task?(:break_into_subfiles)
+    create_dumps if @tasks.include_task?(:create_dumps)
+    pages = build_links if @tasks.include_task?(:build_links)
+    @tasks.write_next_tasks
+    STDERR.puts(@tasks.status_report_string) unless @tasks.last_possible_task_completed?
     pages
+  end
+
+  def finished?
+    @tasks.last_possible_task_completed?
   end
 
   def exorcise_ampersands(string)
@@ -156,5 +157,74 @@ class ManuallyMadePageXmlParser
 
 end
 
+class TaskList
+
+  def initialize(filename)
+    @filename = filename
+    @tasks = get_tasks
+  end
+
+  def include_task?(task)
+    @tasks.include?(task)
+  end
+
+  def possible_tasks
+    possible_tasks = [:break_into_subfiles, :create_dumps, :build_links]
+  end
+
+  def get_tasks
+    tasks = []
+    if ( !@filename.nil? and File.exist?(@filename))
+      yml_data = YAML::load(File.read(@filename))
+      raise "Error: no variables" unless yml_data
+      tasks = yml_data[:tasks]
+      raise "Error: no tasks" if tasks.empty?
+      raise "Error: invalid task" unless (tasks - possible_tasks).empty?
+    else
+      tasks = possible_tasks
+    end
+    tasks
+  end
+
+  def write_next_tasks
+    return if @filename.nil?
+
+    begin
+      File.open(@filename,"w") do |f|
+        f.write({:tasks=>next_tasks}.to_yaml)
+      end
+    rescue
+      STDERR << "Something went wrong when saving the next task. It's probably the hard drive's fault."
+      raise
+    end
+  end
+
+  def last_completed_task
+    last_completed_task = @tasks.max {|task1, task2| possible_tasks.index(task1) <=> possible_tasks.index(task2)}
+  end
+
+  def last_possible_task_completed?
+    last_completed_task == possible_tasks.last
+  end
+
+  def next_tasks
+    if last_possible_task_completed?
+      next_task = possible_tasks.first
+    else
+      next_task = possible_tasks[possible_tasks.index(last_completed_task) + 1]
+    end
+    results = [next_task]
+    results
+  end
+
+  def status_report_string
+    if last_possible_task_completed?
+      "All tasks completed"
+    else
+      "#{@tasks.join(",")} completed, next tasks #{next_tasks.join(",")}"
+    end
+  end
+
+end
 PageXmlParser = ManuallyMadePageXmlParser
 

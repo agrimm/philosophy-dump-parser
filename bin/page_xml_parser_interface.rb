@@ -15,8 +15,9 @@ class ProcessXmlFile
     filenames.each do |filename|
       puts "#{filename}\n\n"
       File.open(filename) do |xml_file|
-        page_xml_parser = PageXmlParser.new(xml_file)
+        page_xml_parser = PageXmlParser.new(xml_file, "tasks.yml")
         mainspace_pages = page_xml_parser.mainspace_pages
+        next unless page_xml_parser.finished?
         repository = Repository.new(mainspace_pages)
         puts repository.analysis_output_string
       end

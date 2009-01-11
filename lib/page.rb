@@ -11,6 +11,7 @@ class Page
     wiki_text = WikiText.new(String(text))
     @articles_linked_somewhere_in_the_text = wiki_text.linked_articles
     @link_ought_to_exist = determine_if_link_ought_to_exist(@articles_linked_somewhere_in_the_text, article_list)
+    shortern_link_list_if_possible(@articles_linked_somewhere_in_the_text, article_list)
   end
 
   def self.new_if_valid(title, text)
@@ -32,6 +33,18 @@ class Page
     articles_linked_somewhere_in_the_text.any? do |potential_link|
       article_list.include?(potential_link.capitalize)
     end
+  end
+
+  def shortern_link_list_if_possible(articles_linked_somewhere_in_the_text, article_list)
+    return if article_list.nil?
+    first_match_index = nil
+    articles_linked_somewhere_in_the_text.each_with_index do |link, i|
+      if article_list.include?(link.capitalize)
+        first_match_index = i
+      end
+    end
+    articles_linked_somewhere_in_the_text.slice!((first_match_index+1)..-1)
+    raise unless articles_linked_somewhere_in_the_text.empty? or article_list.include?(articles_linked_somewhere_in_the_text.last.capitalize)
   end
 
   def self.build_links(page_array)

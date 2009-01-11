@@ -214,9 +214,9 @@ class TestHelperPageCreation
   end
 
   def create_page(options = {})
-    defaults = {:title => random_title, :text=> random_text}
+    defaults = {:title => random_title, :text=> random_text, :article_list => nil}
     options = defaults.merge(options)
-    return Page.new(options[:title], options[:text])
+    return Page.new(options[:title], options[:text], options[:article_list])
   end
 
   def random_title
@@ -227,10 +227,10 @@ class TestHelperPageCreation
     @test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
   end
 
-  def create_page_linking_to_pages(page_titles)
+  def create_page_linking_to_pages(page_titles, article_list = nil)
     warn "Wrong type" if page_titles.respond_to?(:to_str)
     text = page_titles.map{|page_title| "[[#{page_title}]]"}.join(" and ") + "."
-    create_page({:text => text})
+    create_page({:text => text, :article_list => article_list})
   end
 
   #Create several pages with the specified links

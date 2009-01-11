@@ -136,6 +136,12 @@ class TestPage < Test::Unit::TestCase
     assert_equal mergeless_page_expected_string, mergeless_page_actual_string, "Mergeless page doesn't have an empty string"
   end
 
+  def test_complain_if_link_thought_to_exist_doesnt_exist
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    page = test_helper_page_creation_object.create_page_linking_to_pages(["Nonexistent page"], ["Nonexistent page"])
+    assert_raise(RuntimeError) {Page.build_links([page])}
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

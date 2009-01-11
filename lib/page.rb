@@ -3,12 +3,14 @@ require "wiki_text"
 class Page
   attr_reader :title, :backlinks, :total_backlink_count
 
-  def initialize(title, text)
+  def initialize(title, text, article_list = nil)
     raise unless self.class.valid?(title, text)
     @title = title
     @backlinks = []
     @total_backlink_count = 0
-    @wiki_text = WikiText.new(String(text))
+    wiki_text = WikiText.new(String(text))
+    @articles_linked_somewhere_in_the_text = wiki_text.linked_articles
+    @link_ought_to_exist = determine_if_link_ought_to_exist(@articles_linked_somewhere_in_the_text, article_list)
   end
 
   def self.new_if_valid(title, text)
@@ -23,6 +25,13 @@ class Page
     return false if title =~ /:/
     #return false if text.empty?
     return true
+  end
+
+  def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_list)
+    return false if article_list.nil? #It may be possible a direct link ought to be found, but we won't know until we do it
+    articles_linked_somewhere_in_the_text.any? do |potential_link|
+      article_list.include?(potential_link.capitalize)
+    end
   end
 
   def self.build_links(page_array)
@@ -61,15 +70,15 @@ class Page
   end
 
   def build_links(pages)
-    linked_articles = @wiki_text.linked_articles
-    @direct_link = nil #Just to handle a scenario of linked_articles being empty
-    linked_articles.any? do |linked_article|
+    @direct_link = nil #Just to handle a scenario of @articles_linked_somewhere_in_the_text being empty
+    @articles_linked_somewhere_in_the_text.any? do |linked_article|
       @direct_link = (pages[linked_article] or pages[linked_article.capitalize])
       @direct_link = nil if @direct_link == self
       @direct_link
     end
     @direct_link.add_backlink(self) unless @direct_link.nil?
-    @wiki_text = nil
+    raise if @direct_link.nil? and @link_ought_to_exist
+    @articles_linked_somewhere_in_the_text = nil
   end
 
   def immediate_link_string(current_link_chain)

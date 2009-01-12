@@ -43,7 +43,7 @@ class ManuallyMadePageXmlParser
     delete_intermediate_files
     subfile_number = 1
     pages_so_far = 0
-    max_pages_per_file = 10
+    max_pages_per_file = 1000
     subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
     while line = @page_xml_file.gets
       subfile.write(line)

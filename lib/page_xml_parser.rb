@@ -111,12 +111,20 @@ class ManuallyMadePageXmlParser
   end
 
   def each_almost_xml_subfilename
+    almost_xml_subfilenames.each do |filename|
+      yield filename if block_given?
+    end
+  end
+
+  def almost_xml_subfilenames
+    result = []
     i = 0
     while (i += 1)
       filename = "temp/subfile#{i}.almostxml"
       break unless File.exist?(filename)
-      yield filename if block_given?
+      result << filename
     end
+    result
   end
 
   def delete_almost_xml_subfiles

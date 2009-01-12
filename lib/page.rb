@@ -14,9 +14,9 @@ class Page
     shortern_link_list_if_possible(@articles_linked_somewhere_in_the_text, article_list)
   end
 
-  def self.new_if_valid(title, text)
+  def self.new_if_valid(title, text, article_list)
     if valid?(title, text)
-      return new(title, text)
+      return new(title, text, article_list)
     else
       return nil
     end

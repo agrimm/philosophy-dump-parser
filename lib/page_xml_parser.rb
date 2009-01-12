@@ -7,7 +7,7 @@ class ManuallyMadePageXmlParser
     @tasks = TaskList.new(tasklist_filename)
   end
 
-  def parse_pages(file)
+  def parse_pages(file, title_list)
     pages = []
     title, text_lines = nil, []
     end_of_page_text_found = false
@@ -29,7 +29,7 @@ class ManuallyMadePageXmlParser
 
         if end_of_page_text_found
           text = text_lines.join
-          page = Page.new_if_valid(title, text)
+          page = Page.new_if_valid(title, text, title_list)
           pages << page unless page.nil?
           title, text_lines = nil, []
           end_of_page_text_found = false
@@ -61,11 +61,11 @@ class ManuallyMadePageXmlParser
     @page_xml_file.close
   end
 
-  def create_dump_given_subfile_number(subfile_number)
+  def create_dump_given_subfile_number(subfile_number, title_list)
     return unless File.exist?("temp/subfile#{subfile_number}.almostxml")
 
     File.open("temp/subfile#{subfile_number}.almostxml") do |almost_xml_file|
-      pages = parse_pages(almost_xml_file)
+      pages = parse_pages(almost_xml_file, title_list)
       dump = Marshal.dump(pages)
       File.open("dumpfile#{subfile_number}.bin", "w") do |f|
         f.write(dump)
@@ -74,9 +74,10 @@ class ManuallyMadePageXmlParser
   end
 
   def create_dumps
+    title_list = load_title_list
     almost_xml_subfilenames.each_index do |i|
       subfile_number = i + 1
-      result = create_dump_given_subfile_number(subfile_number)
+      result = create_dump_given_subfile_number(subfile_number, title_list)
     end
   end
 
@@ -128,6 +129,11 @@ class ManuallyMadePageXmlParser
     end
   end
 
+  def delete_title_list
+    filename = "temp/title_list.bin"
+    File.delete(filename) if File.exist?(filename)
+  end
+
   def build_links
     pages = load_dumps
     Page.build_links(pages)
@@ -135,9 +141,35 @@ class ManuallyMadePageXmlParser
     pages
   end
 
+  def determine_title_list
+    nil
+  end
+
+  def dump_title_list(title_list)
+    dump = Marshal.dump(title_list)
+    File.open("temp/title_list.bin", "w") do |f|
+      f.write(dump)
+    end
+  end
+
+  def build_title_list
+    title_list = determine_title_list
+    dump_title_list(title_list)
+  end
+
+  def load_title_list
+    title_list = nil
+    File.open("temp/title_list.bin") do |f|
+      dump = f.read
+      title_list = Marshal.load(dump)
+    end
+    title_list
+  end
+
   def mainspace_pages
     pages = []
     break_into_subfiles if @tasks.include_task?(:break_into_subfiles)
+    build_title_list if @tasks.include_task?(:build_title_list)
     create_dumps if @tasks.include_task?(:create_dumps)
     pages = build_links if @tasks.include_task?(:build_links)
     @tasks.write_next_tasks
@@ -172,7 +204,7 @@ class TaskList
   end
 
   def possible_tasks
-    possible_tasks = [:break_into_subfiles, :create_dumps, :build_links]
+    possible_tasks = [:break_into_subfiles, :build_title_list, :create_dumps, :build_links]
   end
 
   def get_tasks

@@ -74,7 +74,8 @@ class ManuallyMadePageXmlParser
   end
 
   def create_dumps
-    1.upto(1000) do |subfile_number|
+    almost_xml_subfilenames.each_index do |i|
+      subfile_number = i + 1
       result = create_dump_given_subfile_number(subfile_number)
     end
   end

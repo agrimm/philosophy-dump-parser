@@ -110,12 +110,6 @@ class ManuallyMadePageXmlParser
     end
   end
 
-  def each_almost_xml_subfilename
-    almost_xml_subfilenames.each do |filename|
-      yield filename if block_given?
-    end
-  end
-
   def almost_xml_subfilenames
     result = []
     i = 0
@@ -128,7 +122,7 @@ class ManuallyMadePageXmlParser
   end
 
   def delete_almost_xml_subfiles
-    each_almost_xml_subfilename do |filename|
+    almost_xml_subfilenames.each do |filename|
       File.delete(filename)
     end
   end

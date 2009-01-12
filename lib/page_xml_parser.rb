@@ -39,6 +39,17 @@ class ManuallyMadePageXmlParser
     pages
   end
 
+  def parse_pages_for_titles(file)
+    title_list = []
+    while line = file.gets
+      if match_data = /<title>(.*)<\/title>/.match(line)
+        title = exorcise_ampersands(match_data[1])
+        title_list << title if Page.title_valid?(title)
+      end
+    end
+    title_list
+  end
+
   def break_into_subfiles
     delete_intermediate_files
     subfile_number = 1
@@ -95,6 +106,7 @@ class ManuallyMadePageXmlParser
   def delete_intermediate_files
     delete_dumpfiles
     delete_almost_xml_subfiles
+    delete_title_list
   end
 
   def each_dumpfilename
@@ -142,7 +154,13 @@ class ManuallyMadePageXmlParser
   end
 
   def determine_title_list
-    nil
+    title_list = []
+    almost_xml_subfilenames.each do |filename|
+      File.open(filename) do |f|
+        title_list += parse_pages_for_titles(f)
+      end
+    end
+    title_list
   end
 
   def dump_title_list(title_list)

@@ -142,6 +142,14 @@ class TestPage < Test::Unit::TestCase
     assert_raise(RuntimeError) {Page.build_links([page])}
   end
 
+  def test_link_shortening
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    page = test_helper_page_creation_object.create_page_linking_to_pages([], ["Real page not linked to by this one"])
+    assert_nothing_raised do
+      Page.build_links([page])
+    end
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

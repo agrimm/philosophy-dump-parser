@@ -36,7 +36,7 @@ class Page
   def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_list)
     return false if article_list.nil? #It may be possible a direct link ought to be found, but we won't know until we do it
     articles_linked_somewhere_in_the_text.any? do |potential_link|
-      article_list.include?(potential_link.capitalize)
+      (article_list.include?(potential_link.capitalize) and (potential_link.capitalize != self.title))
     end
   end
 
@@ -44,12 +44,14 @@ class Page
     return if article_list.nil?
     first_match_index = nil
     articles_linked_somewhere_in_the_text.each_with_index do |link, i|
-      if article_list.include?(link.capitalize)
+      if (article_list.include?(link.capitalize) and (link.capitalize != self.title))
         first_match_index = i
+        articles_linked_somewhere_in_the_text.slice!((first_match_index+1)..-1)
+        articles_linked_somewhere_in_the_text.slice!(0...first_match_index)
+        break
       end
     end
-    articles_linked_somewhere_in_the_text.slice!((first_match_index+1)..-1)
-    raise unless articles_linked_somewhere_in_the_text.empty? or article_list.include?(articles_linked_somewhere_in_the_text.last.capitalize)
+    raise unless articles_linked_somewhere_in_the_text.empty? or article_list.include?(articles_linked_somewhere_in_the_text.last.capitalize) or first_match_index.nil?
   end
 
   def self.build_links(page_array)

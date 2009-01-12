@@ -23,8 +23,13 @@ class Page
   end
 
   def self.valid?(title, text)
-    return false if title =~ /:/
+    return false unless title_valid?(title)
     #return false if text.empty?
+    return true
+  end
+
+  def self.title_valid?(title)
+    return false if title =~ /:/
     return true
   end
 

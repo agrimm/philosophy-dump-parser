@@ -94,9 +94,12 @@ class ManuallyMadePageXmlParser
       end
     end
     actual_title_list = pages.map{|p| p.title}
-    check = determine_title_list
-    raise "pages minus check is #{(actual_title_list-check).inspect}" unless actual_title_list - check == []
-    raise "check minus actual title list is #{(check - actual_title_list).inspect}" unless check - actual_title_list == []
+    debug_mode = false
+    if debug_mode
+      check = determine_title_list
+      raise "pages minus check is #{(actual_title_list-check).inspect}" unless actual_title_list - check == []
+      raise "check minus actual title list is #{(check - actual_title_list).inspect}" unless check - actual_title_list == []
+    end
     pages
   end
 

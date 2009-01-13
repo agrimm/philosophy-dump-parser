@@ -3,20 +3,20 @@ require "wiki_text"
 class Page
   attr_reader :title, :backlinks, :total_backlink_count
 
-  def initialize(title, text, article_list = nil)
+  def initialize(title, text, article_hash = nil)
     raise unless self.class.valid?(title, text)
     @title = title
     @backlinks = []
     @total_backlink_count = 0
     wiki_text = WikiText.new(String(text))
     @articles_linked_somewhere_in_the_text = wiki_text.linked_articles
-    @link_ought_to_exist = determine_if_link_ought_to_exist(@articles_linked_somewhere_in_the_text, article_list)
-    shortern_link_list_if_possible(@articles_linked_somewhere_in_the_text, article_list)
+    @link_ought_to_exist = determine_if_link_ought_to_exist(@articles_linked_somewhere_in_the_text, article_hash)
+    shortern_link_list_if_possible(@articles_linked_somewhere_in_the_text, article_hash)
   end
 
-  def self.new_if_valid(title, text, article_list)
+  def self.new_if_valid(title, text, article_hash)
     if valid?(title, text)
-      return new(title, text, article_list)
+      return new(title, text, article_hash)
     else
       return nil
     end
@@ -33,25 +33,25 @@ class Page
     return true
   end
 
-  def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_list)
-    return false if article_list.nil? #It may be possible a direct link ought to be found, but we won't know until we do it
+  def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
+    return false if article_hash.nil? #It may be possible a direct link ought to be found, but we won't know until we do it
     articles_linked_somewhere_in_the_text.any? do |potential_link|
-      (article_list.include?(potential_link.capitalize) and (potential_link.capitalize != self.title))
+      (article_hash.has_key?(potential_link.capitalize) and (potential_link.capitalize != self.title))
     end
   end
 
-  def shortern_link_list_if_possible(articles_linked_somewhere_in_the_text, article_list)
-    return if article_list.nil?
+  def shortern_link_list_if_possible(articles_linked_somewhere_in_the_text, article_hash)
+    return if article_hash.nil?
     first_match_index = nil
     articles_linked_somewhere_in_the_text.each_with_index do |link, i|
-      if (article_list.include?(link.capitalize) and (link.capitalize != self.title))
+      if (article_hash.has_key?(link.capitalize) and (link.capitalize != self.title))
         first_match_index = i
         articles_linked_somewhere_in_the_text.slice!((first_match_index+1)..-1)
         articles_linked_somewhere_in_the_text.slice!(0...first_match_index)
         break
       end
     end
-    raise unless articles_linked_somewhere_in_the_text.empty? or article_list.include?(articles_linked_somewhere_in_the_text.last.capitalize) or first_match_index.nil?
+    raise unless articles_linked_somewhere_in_the_text.empty? or article_hash.has_key?(articles_linked_somewhere_in_the_text.last.capitalize) or first_match_index.nil?
   end
 
   def self.build_links(page_array)
@@ -97,7 +97,7 @@ class Page
       @direct_link
     end
     @direct_link.add_backlink(self) unless @direct_link.nil?
-    raise if @direct_link.nil? and @link_ought_to_exist
+    raise "Problem with #{self.title} linking to #{@articles_linked_somewhere_in_the_text.join", "}" if @direct_link.nil? and @link_ought_to_exist
     @articles_linked_somewhere_in_the_text = nil
   end
 

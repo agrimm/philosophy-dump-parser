@@ -7,7 +7,7 @@ class ManuallyMadePageXmlParser
     @tasks = TaskList.new(tasklist_filename)
   end
 
-  def parse_pages(file, title_list)
+  def parse_pages(file, title_hash)
     pages = []
     title, text_lines = nil, []
     end_of_page_text_found = false
@@ -29,7 +29,7 @@ class ManuallyMadePageXmlParser
 
         if end_of_page_text_found
           text = text_lines.join
-          page = Page.new_if_valid(title, text, title_list)
+          page = Page.new_if_valid(title, text, title_hash)
           pages << page unless page.nil?
           title, text_lines = nil, []
           end_of_page_text_found = false
@@ -40,14 +40,7 @@ class ManuallyMadePageXmlParser
   end
 
   def parse_pages_for_titles(file)
-    title_list = []
-    while line = file.gets
-      if match_data = /<title>(.*)<\/title>/.match(line)
-        title = exorcise_ampersands(match_data[1])
-        title_list << title if Page.title_valid?(title)
-      end
-    end
-    title_list
+    parse_pages(file, nil).map{|page| page.title}
   end
 
   def break_into_subfiles
@@ -85,10 +78,10 @@ class ManuallyMadePageXmlParser
   end
 
   def create_dumps
-    title_list = load_title_list
+    title_hash = load_title_hash
     almost_xml_subfilenames.each_index do |i|
       subfile_number = i + 1
-      result = create_dump_given_subfile_number(subfile_number, title_list)
+      result = create_dump_given_subfile_number(subfile_number, title_hash)
     end
   end
 
@@ -100,6 +93,10 @@ class ManuallyMadePageXmlParser
         pages += Marshal.load(dump)
       end
     end
+    actual_title_list = pages.map{|p| p.title}
+    check = determine_title_list
+    raise "pages minus check is #{(actual_title_list-check).inspect}" unless actual_title_list - check == []
+    raise "check minus actual title list is #{(check - actual_title_list).inspect}" unless check - actual_title_list == []
     pages
   end
 
@@ -175,13 +172,15 @@ class ManuallyMadePageXmlParser
     dump_title_list(title_list)
   end
 
-  def load_title_list
+  def load_title_hash
     title_list = nil
     File.open("temp/title_list.bin") do |f|
       dump = f.read
       title_list = Marshal.load(dump)
     end
-    title_list
+    title_hash = {}
+    title_list.each {|title| title_hash[title] = true}
+    title_hash
   end
 
   def mainspace_pages

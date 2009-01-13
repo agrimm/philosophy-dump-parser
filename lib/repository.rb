@@ -1,12 +1,12 @@
 class Repository
 
-  def analysis_output_string
-    res = all_link_chain_strings
-    res += most_common_chain_endings_string
-    res += most_backlinks_string
-    res += most_total_backlinks_string
-    res += most_backlinks_merged_string
-    res += page_count_string
+  def analysis_output_string(res = "")
+    res << all_link_chain_strings
+    res << most_common_chain_endings_string
+    res << most_backlinks_string
+    res << most_total_backlinks_string
+    res << most_backlinks_merged_string
+    res << page_count_string
   end
 
   def all_link_chain_strings
@@ -55,14 +55,13 @@ class Repository
     do_reporting(:backlink_merge_count, :backlink_merge_count_string)
   end
 
-  def do_reporting(sorting_method, string_method)
+  def do_reporting(sorting_method, string_method, result = "")
     pages = @pages.sort_by {|page| page.send(sorting_method)}
-    res_strings = []
     pages.each do |page|
       addition = page.send(string_method)
-      res_strings << addition << "\n" unless addition.empty?
+      result << addition << "\n" unless addition.empty?
     end
-    res_strings.join
+    result
   end
 
 end

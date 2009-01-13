@@ -19,7 +19,8 @@ class ProcessXmlFile
         mainspace_pages = page_xml_parser.mainspace_pages
         next unless page_xml_parser.finished?
         repository = Repository.new(mainspace_pages)
-        puts repository.analysis_output_string
+        repository.analysis_output_string(STDOUT)
+        puts
       end
     end
   end

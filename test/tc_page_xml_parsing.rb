@@ -44,6 +44,12 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_parsing_works_for_title(ampersand_exorcised_title, ampersand_containing_title)
   end
 
+  def test_aardvark_recognize_illegal_xml #Needs other tests to clean up after itself
+    illegal_titles = ["Less than <", "Greater than >", "Quotation \""]
+    illegal_titles.each {|illegal_title| assert_illegal_xml_detected(illegal_title)}
+  end
+
+
   #No testing here for less than signs or greater than signs. They aren't allowed in article titles.
   # http://en.wikipedia.org/wiki/Wikipedia:Naming_conventions_(technical_restrictions)#Characters_totally_forbidden_in_page_titles
   #However, test_get_text_contents tests less than and greater than in page text.
@@ -98,6 +104,14 @@ class TestXmlParsing < Test::Unit::TestCase
     page = pages.first
     assert_equal parsed_title, page.title, "Some characters weren't parsed out"
   end
+
+  def assert_illegal_xml_detected(illegal_xml)
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    assert_raise(RuntimeError) do
+      pages = create_pages_given_page_elements([test_helper_xml_creation_object.generate_mainspace_page({:title_text => illegal_xml})])
+    end
+  end
+
 
   def create_pages_given_page_elements(page_elements)
     test_helper_xml_creation_object = TestHelperXmlCreation.new

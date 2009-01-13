@@ -18,7 +18,7 @@ class ManuallyMadePageXmlParser
         if match_data = /<text[^>]*>(.*)<\/text>/.match(line)
           text_lines << exorcise_ampersands(match_data[1])
           end_of_page_text_found = true
-        elsif match_data = /<text[^>]*>(.*)$/m.match(line)
+        elsif match_data = /<text[^\/>]*>(.*)$/m.match(line) #To do: Add handling of empty text
           text_lines << exorcise_ampersands(match_data[1])
         elsif match_data = /(.*)<\/text>/.match(line)
           text_lines << exorcise_ampersands(match_data[1])
@@ -199,6 +199,8 @@ class ManuallyMadePageXmlParser
   end
 
   def exorcise_ampersands(string)
+    illegal_characters = ["<", ">", "\""] #Ampersand is slightly different
+    illegal_characters.each {|c| raise if string.include?(c)}
     #Handle amp and quot, which is required, and less than and greater than, because unit tests already existed for that.
     string.gsub!("&lt;", "<")
     string.gsub!("&gt;", ">")

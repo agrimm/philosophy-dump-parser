@@ -58,9 +58,10 @@ class TestRepository < Test::Unit::TestCase
 
   def test_backlink_counts
     test_helper_page_creation_object = TestHelperPageCreation.new
-    philosophy_page, looping_page = test_helper_page_creation_object.create_network([["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]] ])
-    general_pages = test_helper_page_creation_object.create_network([[nil, ["Philosophy page"]]] * 10)
-    pages = general_pages + [philosophy_page, looping_page]
+    network = [["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]] ]
+    network += [[nil, ["Philosophy page"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    philosophy_page, looping_page, *general_pages = pages
     Page.build_links(pages)
     philosophy_expected_backlink_count = pages.size - 2 #Looping page doesn't contribute to the count. This is probably bad.
     looping_page_expected_backlink_count = 0 #Neither from philosophy or from looping page
@@ -72,10 +73,10 @@ class TestRepository < Test::Unit::TestCase
 
   def test_backlink_count_reporting
     test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], [nil, ["Philosophy page"]] ]
-    philosophy_page, looping_page, popular_page = test_helper_page_creation_object.create_network(network)
-    general_pages = test_helper_page_creation_object.create_network([[nil, [popular_page.title]]] * 10)
-    pages = general_pages + [philosophy_page, looping_page, popular_page]
+    network = [["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], ["Popular page", ["Philosophy page"]] ]
+    network += [[nil, ["Popular page"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    philosophy_page, looping_page, popular_page, *general_pages = pages
     Page.build_links(pages)
     expected_popular_page_string = "#{popular_page.title}, which links to Philosophy page, has 10 backlinks"
     actual_popular_page_string = popular_page.total_backlink_count_string

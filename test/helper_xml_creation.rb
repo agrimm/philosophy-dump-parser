@@ -235,6 +235,10 @@ class TestHelperPageCreation
 
   #Create several pages with the specified links
   def create_network(titles_and_links, article_list = nil)
+    if article_list.nil?
+      article_list = {}
+      titles_and_links.each {|title, links| article_list[title] = true}
+    end
     titles_and_links.map do |title, links|
       text = links.map{|link| "[[#{link}]]"}.join(" and ") + "."
       title = random_title if title.nil?

@@ -153,10 +153,9 @@ class TestPage < Test::Unit::TestCase
   def test_dont_throw_an_exception_with_capitalization_issues
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Acropolis of Athens", ["Acropolis of Athens", "Acropolis"]], ["Acropolis of athens", []], ["Acropolis", []] ]
-    title_hash = {"Acropolis of Athens" => true, "Acropolis of athens" => true, "Acropolis" => true}
     pages = nil
     assert_nothing_raised do
-      pages = test_helper_page_creation_object.create_network(network, title_hash)
+      pages = test_helper_page_creation_object.create_network(network)
       Page.build_links(pages)
     end
   end

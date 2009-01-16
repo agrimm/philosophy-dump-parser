@@ -44,7 +44,7 @@ class Page
     return if article_hash.nil?
     first_match_index = nil
     articles_linked_somewhere_in_the_text.each_with_index do |link, i|
-      if (article_hash.has_key?(link.capitalize) and (link.capitalize != self.title))
+      if is_valid_link_for_hash?(link, article_hash)
         first_match_index = i
         articles_linked_somewhere_in_the_text.slice!((first_match_index+1)..-1)
         articles_linked_somewhere_in_the_text.slice!(0...first_match_index)
@@ -52,6 +52,11 @@ class Page
       end
     end
     raise unless articles_linked_somewhere_in_the_text.empty? or article_hash.has_key?(articles_linked_somewhere_in_the_text.last.capitalize) or first_match_index.nil?
+  end
+
+  #Next iteration: change this string manipulation to something correct
+  def is_valid_link_for_hash?(link_string, hash)
+    return (hash.has_key?(link_string.capitalize) and link_string.capitalize != self.title and link_string != self.title)
   end
 
   def self.build_links(page_array)

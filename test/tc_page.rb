@@ -150,6 +150,17 @@ class TestPage < Test::Unit::TestCase
     end
   end
 
+  def test_dont_throw_an_exception_with_capitalization_issues
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["Acropolis of Athens", ["Acropolis of Athens", "Acropolis"]], ["Acropolis of athens", []], ["Acropolis", []] ]
+    title_hash = {"Acropolis of Athens" => true, "Acropolis of athens" => true, "Acropolis" => true}
+    pages = nil
+    assert_nothing_raised do
+      pages = test_helper_page_creation_object.create_network(network, title_hash)
+      Page.build_links(pages)
+    end
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

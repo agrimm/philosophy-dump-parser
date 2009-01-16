@@ -81,7 +81,7 @@ class TestPage < Test::Unit::TestCase
 
   def test_backlink_merge_count_for_direct_backlinks
     test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [ ["merging page", []], [nil, ["merging page"]], [nil, ["merging page"]] ]
+    network = [ ["Merging page", []], [nil, ["merging page"]], [nil, ["merging page"]] ]
     pages = test_helper_page_creation_object.create_network(network)
     Page.build_links(pages)
     merging_page = pages.first
@@ -92,7 +92,7 @@ class TestPage < Test::Unit::TestCase
 
   def test_backlink_merge_count_for_indirect_backlinks
     test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]], ["popular page 2", ["philosophy page"]] ]
+    network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]], ["Popular page 2", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
     pages = test_helper_page_creation_object.create_network(network)
@@ -110,7 +110,7 @@ class TestPage < Test::Unit::TestCase
 
   def test_backlink_merge_count_for_page_not_merging_anything
     test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]] ]
+    network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     pages = test_helper_page_creation_object.create_network(network)
     Page.build_links(pages)
@@ -120,13 +120,13 @@ class TestPage < Test::Unit::TestCase
 
   def test_backlink_merge_count_string
     test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]], ["popular page 2", ["philosophy page"]] ]
+    network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]], ["Popular page 2", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
     pages = test_helper_page_creation_object.create_network(network)
     Page.build_links(pages)
     philosophy_page = pages.first
-    philosophy_page_expected_string = "philosophy page has merged 6 backlinks"
+    philosophy_page_expected_string = "Philosophy page has merged 6 backlinks"
     philosophy_page_actual_string = philosophy_page.backlink_merge_count_string
     assert_equal philosophy_page_expected_string, philosophy_page_actual_string
 
@@ -158,6 +158,12 @@ class TestPage < Test::Unit::TestCase
       pages = test_helper_page_creation_object.create_network(network)
       Page.build_links(pages)
     end
+  end
+
+  def test_reject_titles_starting_lowercase
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [["lowercase",[]]]
+    assert_raise(RuntimeError) {pages = test_helper_page_creation_object.create_network(network)}
   end
 
   def assert_direct_link_to(originating_page, expected_target_page)

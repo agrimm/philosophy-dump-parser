@@ -85,7 +85,7 @@ class TestRepository < Test::Unit::TestCase
 
   def test_merge_count_reporting
     test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [ ["philosophy page", []], ["popular page 1", ["philosophy page"]], ["popular page 2", ["philosophy page"]] ]
+    network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]], ["Popular page 2", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
     pages = test_helper_page_creation_object.create_network(network)

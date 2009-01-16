@@ -30,6 +30,7 @@ class Page
 
   def self.title_valid?(title)
     return false if title =~ /:/
+    raise "Invalid title #{title}" if title != upcase_first_letter(title)
     return true
   end
 
@@ -57,6 +58,10 @@ class Page
   #Next iteration: change this string manipulation to something correct
   def is_valid_link_for_hash?(link_string, hash)
     return ((hash.has_key?(link_string.capitalize) or hash.has_key?(link_string)) and link_string.capitalize != self.title and link_string != self.title)
+  end
+
+  def self.upcase_first_letter(string)
+    return string[0..0].upcase + string[1..-1]
   end
 
   def self.build_links(page_array)

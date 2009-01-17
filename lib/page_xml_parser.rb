@@ -7,40 +7,50 @@ class ManuallyMadePageXmlParser
     @tasks = TaskList.new(tasklist_filename)
   end
 
-  def parse_pages(file, title_hash)
-    pages = []
+  def parse_next_page_details(file)
     title, text_lines = nil, []
-    end_of_page_text_found = false
     while line = file.gets
       if match_data = /<title>(.*)<\/title>/.match(line)
         title = exorcise_ampersands(match_data[1])
       else
         if match_data = /<text[^>]*>(.*)<\/text>/.match(line)
           text_lines << exorcise_ampersands(match_data[1])
-          end_of_page_text_found = true
+          break
         elsif match_data = /<text[^\/>]*>(.*)$/m.match(line) #To do: Add handling of empty text
           text_lines << exorcise_ampersands(match_data[1])
         elsif match_data = /(.*)<\/text>/.match(line)
           text_lines << exorcise_ampersands(match_data[1])
-          end_of_page_text_found = true
+          break
         elsif (text_lines.size > 0)
           text_lines << exorcise_ampersands(line)
         end
-
-        if end_of_page_text_found
-          text = text_lines.join
-          page = Page.new_if_valid(title, text, title_hash)
-          pages << page unless page.nil?
-          title, text_lines = nil, []
-          end_of_page_text_found = false
-        end
       end
+    end
+    unless title.nil?
+      result = {:title => title, :text => text_lines.join}
+    else
+      result = nil
+    end
+    return result
+  end
+
+  def parse_pages(file, title_hash)
+    pages = []
+    while (parse_result = parse_next_page_details(file))
+      title, text = parse_result[:title], parse_result[:text]
+      page = Page.new_if_valid(title, text, title_hash)
+      pages << page unless page.nil?
     end
     pages
   end
 
   def parse_pages_for_titles(file)
-    parse_pages(file, nil).map{|page| page.title}
+    titles = []
+    while (parse_result = parse_next_page_details(file))
+      title = parse_result[:title]
+      titles << title if Page.title_valid?(title)
+    end
+    titles
   end
 
   def break_into_subfiles

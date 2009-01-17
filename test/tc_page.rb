@@ -192,9 +192,9 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to pages[0], pages[1]
   end
 
-  def assert_direct_link_to(originating_page, expected_target_page)
+  def assert_direct_link_to(originating_page, expected_target_page, message = nil)
     actual_target_page = originating_page.direct_link
-    assert_equal expected_target_page, actual_target_page
+    assert_equal expected_target_page, actual_target_page, message
   end
 
   def assert_link_chain_without_loop_matches(originating_page, expected_chain)

@@ -142,6 +142,12 @@ class TestPage < Test::Unit::TestCase
     assert_raise(RuntimeError) {Page.build_links([page])}
   end
 
+  def test_complain_if_lowercase_first_letter_link_thought_to_exist_but_doesnt_exist
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    page = test_helper_page_creation_object.create_page_linking_to_pages(["nonexistent Page"], {"Nonexistent Page" => true})
+    assert_raise(RuntimeError) {Page.build_links([page])}
+  end
+
   def test_link_shortening
     test_helper_page_creation_object = TestHelperPageCreation.new
     page = test_helper_page_creation_object.create_page_linking_to_pages([], {"Real page not linked to by this one"=>true})
@@ -154,6 +160,15 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Acropolis of Athens", ["Acropolis of Athens", "Acropolis"]], ["Acropolis of athens", []], ["Acropolis", []] ]
     pages = nil
+    assert_nothing_raised do
+      pages = test_helper_page_creation_object.create_network(network)
+      Page.build_links(pages)
+    end
+  end
+
+  def test_dont_throw_an_exception_with_capitalization_issues_for_a_self_link
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["Acropolis of Athens", ["Acropolis of Athens"]]]
     assert_nothing_raised do
       pages = test_helper_page_creation_object.create_network(network)
       Page.build_links(pages)

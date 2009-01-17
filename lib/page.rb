@@ -57,10 +57,11 @@ class Page
 
   #Next iteration: change this string manipulation to something correct
   def is_valid_link_for_hash?(link_string, hash)
-    return ((hash.has_key?(link_string.capitalize) or hash.has_key?(link_string)) and link_string.capitalize != self.title and link_string != self.title)
+    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and link_string.capitalize != self.title and link_string != self.title)
   end
 
   def self.upcase_first_letter(string)
+    return string if string == ""
     return string[0..0].upcase + string[1..-1]
   end
 
@@ -102,7 +103,7 @@ class Page
   def build_links(pages)
     @direct_link = nil #Just to handle a scenario of @articles_linked_somewhere_in_the_text being empty
     @articles_linked_somewhere_in_the_text.any? do |linked_article|
-      @direct_link = (pages[linked_article] or pages[linked_article.capitalize])
+      @direct_link = pages[self.class.upcase_first_letter(linked_article)]
       @direct_link = nil if @direct_link == self
       @direct_link
     end

@@ -160,10 +160,27 @@ class TestPage < Test::Unit::TestCase
     end
   end
 
+  def test_link_to_page_with_capitalization_in_second_word
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [[nil, ["the Moon"]], ["The Moon", []]]
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    assert_direct_link_to pages.first, pages[1]
+  end
+
   def test_reject_titles_starting_lowercase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["lowercase",[]]]
     assert_raise(RuntimeError) {pages = test_helper_page_creation_object.create_network(network)}
+  end
+
+  def test_handle_empty_wikilinks
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [[nil,[""]]]
+    assert_nothing_raised do
+      pages = test_helper_page_creation_object.create_network(network)
+      Page.build_links(pages)
+    end
   end
 
   def assert_direct_link_to(originating_page, expected_target_page)

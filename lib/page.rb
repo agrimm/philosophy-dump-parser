@@ -108,7 +108,7 @@ class Page
       @direct_link
     end
     @direct_link.add_backlink(self) unless @direct_link.nil?
-    raise "Problem with #{self.title} linking to #{@articles_linked_somewhere_in_the_text.join", "}" if @direct_link.nil? and @link_ought_to_exist
+    raise "Problem with #{self.title}, which links to (at least) #{@articles_linked_somewhere_in_the_text.inspect}, doesn't link to anything but ought to do so." if @direct_link.nil? and @link_ought_to_exist
     @articles_linked_somewhere_in_the_text = nil
   end
 

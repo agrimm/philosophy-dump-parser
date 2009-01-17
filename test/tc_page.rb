@@ -192,6 +192,14 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to pages[0], pages[1]
   end
 
+  def test_accept_link_that_seems_similar_to_self_link
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [["Event horizon", ["Event Horizon"]], ["Event Horizon", []]]
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    assert_direct_link_to pages[0], pages[1], "Link to similar title does not work."
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page, message = nil)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page, message

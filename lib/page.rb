@@ -42,7 +42,7 @@ class Page
   end
 
   def is_valid_link_for_hash_for_existance_checking?(link_string, hash)
-    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and (link_string.capitalize != self.title) and self.class.upcase_first_letter(link_string) != self.title)
+    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and self.class.upcase_first_letter(link_string) != self.title)
   end
 
   def shortern_link_list_if_possible(articles_linked_somewhere_in_the_text, article_hash)

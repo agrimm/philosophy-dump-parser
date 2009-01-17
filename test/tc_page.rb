@@ -154,6 +154,14 @@ class TestPage < Test::Unit::TestCase
     assert_nothing_raised {Page.build_links([page])}
   end
 
+  def test_complain_when_an_article_similar_to_your_own_page_does_not_exist
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [["Event horizon", ["Event Horizon"]]]
+    bogus_hash = {"Event Horizon" => true}
+    pages= test_helper_page_creation_object.create_network(network, bogus_hash)
+    assert_raise(RuntimeError) {Page.build_links(pages)}
+  end
+
   def test_link_shortening
     test_helper_page_creation_object = TestHelperPageCreation.new
     page = test_helper_page_creation_object.create_page_linking_to_pages([], {"Real page not linked to by this one"=>true})

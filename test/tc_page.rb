@@ -148,6 +148,12 @@ class TestPage < Test::Unit::TestCase
     assert_raise(RuntimeError) {Page.build_links([page])}
   end
 
+  def test_dont_complain_about_nonexistant_page_not_linked_to
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    page = test_helper_page_creation_object.create_page_linking_to_pages(["Nonexistent Page"], {"Nonexistent page" => true})
+    assert_nothing_raised {Page.build_links([page])}
+  end
+
   def test_link_shortening
     test_helper_page_creation_object = TestHelperPageCreation.new
     page = test_helper_page_creation_object.create_page_linking_to_pages([], {"Real page not linked to by this one"=>true})

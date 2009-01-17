@@ -37,12 +37,8 @@ class Page
   def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
     return false if article_hash.nil? #It may be possible a direct link ought to be found, but we won't know until we do it
     articles_linked_somewhere_in_the_text.any? do |potential_link|
-      is_valid_link_for_hash_for_existance_checking?(potential_link, article_hash)
+      is_valid_link_for_hash?(potential_link, article_hash)
     end
-  end
-
-  def is_valid_link_for_hash_for_existance_checking?(link_string, hash)
-    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and self.class.upcase_first_letter(link_string) != self.title)
   end
 
   def shortern_link_list_if_possible(articles_linked_somewhere_in_the_text, article_hash)

@@ -58,7 +58,7 @@ class ManuallyMadePageXmlParser
     subfile_number = 1
     pages_so_far = 0
     max_pages_per_file = 1000
-    subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
+    subfile = open_subfile(subfile_number, {:first=>true})
     while line = @page_xml_file.gets
       subfile.write(line)
       if line.include?("</page>")
@@ -66,13 +66,26 @@ class ManuallyMadePageXmlParser
         if (pages_so_far % max_pages_per_file == 0)
           subfile_number += 1
           pages_so_far = 0
-          subfile.close
-          subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
+          close_subfile(subfile, {:last=>false})
+          subfile = open_subfile(subfile_number, {:first=>false})
         end
       end
     end
-    subfile.close
+    close_subfile(subfile, {:last=>true})
     @page_xml_file.close
+  end
+
+  def open_subfile(subfile_number, options)
+    subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
+    first = options[:first]
+    subfile << "<mediawiki>\n" unless first
+    subfile
+  end
+
+  def close_subfile(subfile, options)
+    last = options[:last]
+    subfile << "</mediawiki>\n" unless last
+    subfile.close
   end
 
   def create_dump_given_subfile_number(subfile_number, title_list)

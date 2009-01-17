@@ -183,6 +183,15 @@ class TestPage < Test::Unit::TestCase
     end
   end
 
+  def test_reject_self_links_even_if_lower_case
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [["Page One", ["page One", "page Two"]], ["Page Two", []]]
+    pages = test_helper_page_creation_object.create_network(network)
+    Page.build_links(pages)
+    assert_not_nil pages[0].direct_link, "shortern_link_list_if_possible shortened the list to an invalid link"
+    assert_direct_link_to pages[0], pages[1]
+  end
+
   def assert_direct_link_to(originating_page, expected_target_page)
     actual_target_page = originating_page.direct_link
     assert_equal expected_target_page, actual_target_page

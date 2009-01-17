@@ -57,7 +57,7 @@ class Page
 
   #Next iteration: change this string manipulation to something correct
   def is_valid_link_for_hash?(link_string, hash)
-    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and link_string.capitalize != self.title and link_string != self.title)
+    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and self.class.upcase_first_letter(link_string) != self.title and link_string.capitalize != self.title and link_string != self.title)
   end
 
   def self.upcase_first_letter(string)

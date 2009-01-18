@@ -1,5 +1,7 @@
 require "yaml"
 require "page"
+require "rubygems"
+require "xml"
 
 class ManuallyMadePageXmlParser
   def initialize(page_xml_file, tasklist_filename = nil)
@@ -7,36 +9,26 @@ class ManuallyMadePageXmlParser
     @tasks = TaskList.new(tasklist_filename)
   end
 
-  def parse_next_page_details(file)
-    title, text_lines = nil, []
-    while line = file.gets
-      if match_data = /<title>(.*)<\/title>/.match(line)
-        title = exorcise_ampersands(match_data[1])
-      else
-        if match_data = /<text[^>]*>(.*)<\/text>/.match(line)
-          text_lines << exorcise_ampersands(match_data[1])
-          break
-        elsif match_data = /<text[^\/>]*>(.*)$/m.match(line) #To do: Add handling of empty text
-          text_lines << exorcise_ampersands(match_data[1])
-        elsif match_data = /(.*)<\/text>/.match(line)
-          text_lines << exorcise_ampersands(match_data[1])
-          break
-        elsif (text_lines.size > 0)
-          text_lines << exorcise_ampersands(line)
-        end
+  def parse_next_page_details(xml_parser)
+    title, text = nil, nil
+
+    while (read_result = xml_parser.read and not (xml_parser.node_type == XML::Reader::TYPE_END_ELEMENT and xml_parser.name == "mediawiki"))
+      raise if read_result == -1
+      if (xml_parser.node_type == XML::Reader::TYPE_ELEMENT and xml_parser.name == "title")
+        xml_parser.read
+        title = xml_parser.value
+      elsif (xml_parser.node_type == XML::Reader::TYPE_ELEMENT and xml_parser.name == "text")
+        xml_parser.read
+        text = xml_parser.value
+        return {:title => title, :text => text}
       end
     end
-    unless title.nil?
-      result = {:title => title, :text => text_lines.join}
-    else
-      result = nil
-    end
-    return result
+    return nil
   end
 
-  def parse_pages(file, title_hash)
+  def parse_pages(xml_parser, title_hash)
     pages = []
-    while (parse_result = parse_next_page_details(file))
+    while (parse_result = parse_next_page_details(xml_parser))
       title, text = parse_result[:title], parse_result[:text]
       page = Page.new_if_valid(title, text, title_hash)
       pages << page unless page.nil?
@@ -44,9 +36,9 @@ class ManuallyMadePageXmlParser
     pages
   end
 
-  def parse_pages_for_titles(file)
+  def parse_pages_for_titles(xml_parser)
     titles = []
-    while (parse_result = parse_next_page_details(file))
+    while (parse_result = parse_next_page_details(xml_parser))
       title = parse_result[:title]
       titles << title if Page.title_valid?(title)
     end
@@ -57,7 +49,7 @@ class ManuallyMadePageXmlParser
     delete_intermediate_files
     subfile_number = 1
     pages_so_far = 0
-    max_pages_per_file = 1000
+    max_pages_per_file = 1000_000_000
     subfile = open_subfile(subfile_number, {:first=>true})
     while line = @page_xml_file.gets
       subfile.write(line)
@@ -92,7 +84,8 @@ class ManuallyMadePageXmlParser
     return unless File.exist?("temp/subfile#{subfile_number}.almostxml")
 
     File.open("temp/subfile#{subfile_number}.almostxml") do |almost_xml_file|
-      pages = parse_pages(almost_xml_file, title_list)
+      xml_parser = XML::Reader.io(almost_xml_file)
+      pages = parse_pages(xml_parser, title_list)
       dump = Marshal.dump(pages)
       File.open("dumpfile#{subfile_number}.bin", "w") do |f|
         f.write(dump)
@@ -180,7 +173,8 @@ class ManuallyMadePageXmlParser
     title_list = []
     almost_xml_subfilenames.each do |filename|
       File.open(filename) do |f|
-        title_list += parse_pages_for_titles(f)
+        xml_parser = XML::Reader.io(f)
+        title_list += parse_pages_for_titles(xml_parser)
       end
     end
     title_list

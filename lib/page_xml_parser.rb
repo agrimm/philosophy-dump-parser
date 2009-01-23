@@ -43,21 +43,37 @@ class ManuallyMadePageXmlParser
     @tasks = TaskList.new(tasklist_filename)
   end
 
-  def parse_pages(xml_handler, title_hash)
-    pages = []
+  def parse_next_page(xml_handler, title_hash)
+    result = nil
     while (parse_result = xml_handler.parse_next_page_details)
       title, text = parse_result[:title], parse_result[:text]
-      page = Page.new_if_valid(title, text, title_hash)
-      pages << page unless page.nil?
+      result = Page.new_if_valid(title, text, title_hash)
+      break unless result.nil?
+    end
+    result
+  end
+
+  def parse_pages(xml_handler, title_hash)
+    pages = []
+    while (page = parse_next_page(xml_handler, title_hash))
+      pages << page
     end
     pages
   end
 
+  def parse_next_valid_title(xml_handler)
+    result = nil
+    while (parse_result = xml_handler.parse_next_page_details)
+      result = parse_result[:title] if Page.title_valid?(parse_result[:title])
+      break unless result.nil?
+    end
+    result
+  end
+
   def parse_pages_for_titles(xml_handler)
     titles = []
-    while (parse_result = xml_handler.parse_next_page_details)
-      title = parse_result[:title]
-      titles << title if Page.title_valid?(title)
+    while (title = parse_next_valid_title(xml_handler))
+      titles << title
     end
     titles
   end
@@ -65,10 +81,14 @@ class ManuallyMadePageXmlParser
   def create_dumps
     title_hash = load_title_hash
     xml_handler = XmlHandler.new(@page_xml_file)
-    pages = parse_pages(xml_handler, title_hash)
-    dump = Marshal.dump(pages)
-    File.open("dumpfile1.bin", "w") do |f|
-      f.write(dump)
+    i = 0
+    while (i += 1)
+      pages = parse_pages(xml_handler, title_hash)
+      dump = Marshal.dump(pages)
+      File.open("dumpfile#{i}.bin", "w") do |f|
+        f.write(dump)
+      end
+      break
     end
   end
 

@@ -60,7 +60,7 @@ class WikiText
   def parse_hatnotes(wiki_text)
     resulting_text = ""
     hatnote_passed = false
-    wiki_text.each do |line|
+    wiki_text.each_line do |line|
       hatnote_passed ||= (line =~ /^[^:].*\w/) #Doesn't start with a colon, has real text in it
       if hatnote_passed or line =~ /^[^:]/
         resulting_text << line

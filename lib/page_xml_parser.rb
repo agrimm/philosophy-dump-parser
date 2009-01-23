@@ -225,17 +225,6 @@ class ManuallyMadePageXmlParser
     @tasks.last_possible_task_completed?
   end
 
-  def exorcise_ampersands(string)
-    illegal_characters = ["<", ">", "\""] #Ampersand is slightly different
-    illegal_characters.each {|c| raise if string.include?(c)}
-    #Handle amp and quot, which is required, and less than and greater than, because unit tests already existed for that.
-    string.gsub!("&lt;", "<")
-    string.gsub!("&gt;", ">")
-    string.gsub!("&quot;", "\"")
-    string.gsub!("&amp;", "&")
-    string
-  end
-
 end
 
 class TaskList

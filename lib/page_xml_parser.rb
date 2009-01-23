@@ -7,6 +7,8 @@ class XmlHandler
   def parse_next_page_details
     title, text = nil, nil
 
+    raise if @finished
+
     while (read_result = @xml_parser.read and not (@xml_parser.node_type == XML::Reader::TYPE_END_ELEMENT and @xml_parser.name == "mediawiki"))
       raise if read_result == -1
       if (@xml_parser.node_type == XML::Reader::TYPE_ELEMENT and @xml_parser.name == "title")
@@ -18,11 +20,19 @@ class XmlHandler
         return {:title => title, :text => text}
       end
     end
+    set_finished
     return nil
   end
 
+  def set_finished
+    @xml_file.rewind
+    @finished = true
+  end
+
   def initialize(xml_file)
-    @xml_parser = XML::Reader.io(xml_file)
+    @xml_file = xml_file
+    @xml_parser = XML::Reader.io(@xml_file)
+    @finished = false
   end
 
 end
@@ -52,59 +62,13 @@ class ManuallyMadePageXmlParser
     titles
   end
 
-  def break_into_subfiles
-    delete_intermediate_files
-    subfile_number = 1
-    pages_so_far = 0
-    max_pages_per_file = 1000_000_000
-    subfile = open_subfile(subfile_number, {:first=>true})
-    while line = @page_xml_file.gets
-      subfile.write(line)
-      if line.include?("</page>")
-        pages_so_far += 1
-        if (pages_so_far % max_pages_per_file == 0)
-          subfile_number += 1
-          pages_so_far = 0
-          close_subfile(subfile, {:last=>false})
-          subfile = open_subfile(subfile_number, {:first=>false})
-        end
-      end
-    end
-    close_subfile(subfile, {:last=>true})
-    @page_xml_file.close
-  end
-
-  def open_subfile(subfile_number, options)
-    subfile = File.open("temp/subfile#{subfile_number}.almostxml", "w")
-    first = options[:first]
-    subfile << "<mediawiki>\n" unless first
-    subfile
-  end
-
-  def close_subfile(subfile, options)
-    last = options[:last]
-    subfile << "</mediawiki>\n" unless last
-    subfile.close
-  end
-
-  def create_dump_given_subfile_number(subfile_number, title_list)
-    return unless File.exist?("temp/subfile#{subfile_number}.almostxml")
-
-    File.open("temp/subfile#{subfile_number}.almostxml") do |almost_xml_file|
-      xml_handler = XmlHandler.new(almost_xml_file)
-      pages = parse_pages(xml_handler, title_list)
-      dump = Marshal.dump(pages)
-      File.open("dumpfile#{subfile_number}.bin", "w") do |f|
-        f.write(dump)
-      end
-    end
-  end
-
   def create_dumps
     title_hash = load_title_hash
-    almost_xml_subfilenames.each_index do |i|
-      subfile_number = i + 1
-      result = create_dump_given_subfile_number(subfile_number, title_hash)
+    xml_handler = XmlHandler.new(@page_xml_file)
+    pages = parse_pages(xml_handler, title_hash)
+    dump = Marshal.dump(pages)
+    File.open("dumpfile1.bin", "w") do |f|
+      f.write(dump)
     end
   end
 
@@ -116,9 +80,9 @@ class ManuallyMadePageXmlParser
         pages += Marshal.load(dump)
       end
     end
-    actual_title_list = pages.map{|p| p.title}
     debug_mode = false
     if debug_mode
+      actual_title_list = pages.map{|p| p.title}
       check = determine_title_list
       raise "pages minus check is #{(actual_title_list-check).inspect}" unless actual_title_list - check == []
       raise "check minus actual title list is #{(check - actual_title_list).inspect}" unless check - actual_title_list == []
@@ -128,7 +92,6 @@ class ManuallyMadePageXmlParser
 
   def delete_intermediate_files
     delete_dumpfiles
-    delete_almost_xml_subfiles
     delete_title_list
   end
 
@@ -147,23 +110,6 @@ class ManuallyMadePageXmlParser
     end
   end
 
-  def almost_xml_subfilenames
-    result = []
-    i = 0
-    while (i += 1)
-      filename = "temp/subfile#{i}.almostxml"
-      break unless File.exist?(filename)
-      result << filename
-    end
-    result
-  end
-
-  def delete_almost_xml_subfiles
-    almost_xml_subfilenames.each do |filename|
-      File.delete(filename)
-    end
-  end
-
   def delete_title_list
     filename = "temp/title_list.bin"
     File.delete(filename) if File.exist?(filename)
@@ -177,13 +123,8 @@ class ManuallyMadePageXmlParser
   end
 
   def determine_title_list
-    title_list = []
-    almost_xml_subfilenames.each do |filename|
-      File.open(filename) do |f|
-        xml_handler = XmlHandler.new(f)
-        title_list += parse_pages_for_titles(xml_handler)
-      end
-    end
+    xml_handler = XmlHandler.new(@page_xml_file)
+    title_list = parse_pages_for_titles(xml_handler)
     title_list
   end
 
@@ -212,7 +153,7 @@ class ManuallyMadePageXmlParser
 
   def mainspace_pages
     pages = []
-    break_into_subfiles if @tasks.include_task?(:break_into_subfiles)
+    delete_intermediate_files if @tasks.first_possible_task_listed?
     build_title_list if @tasks.include_task?(:build_title_list)
     create_dumps if @tasks.include_task?(:create_dumps)
     pages = build_links if @tasks.include_task?(:build_links)
@@ -239,7 +180,7 @@ class TaskList
   end
 
   def possible_tasks
-    possible_tasks = [:break_into_subfiles, :build_title_list, :create_dumps, :build_links]
+    possible_tasks = [:build_title_list, :create_dumps, :build_links]
   end
 
   def get_tasks
@@ -275,6 +216,14 @@ class TaskList
 
   def last_possible_task_completed?
     last_completed_task == possible_tasks.last
+  end
+
+  def first_listed_task
+    first_listed_task = @tasks.min {|task1, task2| possible_tasks.index(task1) <=> possible_tasks.index(task2)}
+  end
+
+  def first_possible_task_listed?
+    first_listed_task == possible_tasks.first
   end
 
   def next_tasks

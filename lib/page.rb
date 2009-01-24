@@ -177,7 +177,8 @@ class Page
   end
 
   def link_chain_without_loop
-    @link_chain_without_loop ||= build_link_chain_without_loop
+    #Currently called only once, so not caching it.
+    build_link_chain_without_loop
   end
 
   def link_chain_string

@@ -81,14 +81,24 @@ class ManuallyMadePageXmlParser
   def create_dumps
     title_hash = load_title_hash
     xml_handler = XmlHandler.new(@page_xml_file)
-    i = 0
-    while (i += 1)
-      pages = parse_pages(xml_handler, title_hash)
-      dump = Marshal.dump(pages)
-      File.open("dumpfile#{i}.bin", "w") do |f|
-        f.write(dump)
+    subfile_number = 1
+    max_pages_per_dump = 1000 #Can be anything
+    pages = []
+    while (page = parse_next_page(xml_handler, title_hash))
+      pages << page
+      if pages.size == max_pages_per_dump
+        create_page_dump(pages, subfile_number)
+        subfile_number += 1
+        pages = []
       end
-      break
+    end
+    create_page_dump(pages, subfile_number)
+  end
+
+  def create_page_dump(pages, subfile_number)
+    dump = Marshal.dump(pages)
+    File.open("dumpfile#{subfile_number}.bin", "w") do |f|
+      f.write(dump)
     end
   end
 

@@ -1,12 +1,30 @@
 class Repository
 
+  def self.do_dump(object, filename)
+    debug_mode = false
+    return unless debug_mode
+    STDERR.puts "Item dumped to #{filename} at #{Time.now.to_s}"
+    dump = Marshal.dump(object)
+    File.open(filename, "w") do |f|
+      f.write(dump)
+    end
+  end
+
   def analysis_output_string(res = "")
+    self.class.do_dump(@pages, "analysis_output_string1.bin")
     res << all_link_chain_strings
+    self.class.do_dump(@pages, "analysis_output_string2.bin")
     res << most_common_chain_endings_string
+    self.class.do_dump(@pages, "analysis_output_string3.bin")
     res << most_backlinks_string
+    self.class.do_dump(@pages, "analysis_output_string4.bin")
     res << most_total_backlinks_string
+    self.class.do_dump(@pages, "analysis_output_string5.bin")
     res << most_backlinks_merged_string
+    self.class.do_dump(@pages, "analysis_output_string6.bin")
     res << page_count_string
+    self.class.do_dump(@pages, "analysis_output_string7.bin")
+    res
   end
 
   def all_link_chain_strings

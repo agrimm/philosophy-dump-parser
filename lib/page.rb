@@ -66,8 +66,21 @@ class Page
   end
 
   def self.build_links(page_array)
+    self.do_dump(page_array, "before_build_links.bin")
     self.build_direct_links(page_array)
+    self.do_dump(page_array, "after_direct_links.bin")
     self.build_total_backlink_counts(page_array)
+    self.do_dump(page_array, "after_total_backlinks.bin")
+  end
+
+  def self.do_dump(object, filename)
+    debug_mode = false
+    return unless debug_mode
+    STDERR.puts "Item dumped to #{filename} at #{Time.now.to_s}"
+    dump = Marshal.dump(object)
+    File.open(filename, "w") do |f|
+      f.write(dump)
+    end
   end
 
   def self.build_direct_links(page_array)

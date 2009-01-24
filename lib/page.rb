@@ -144,12 +144,17 @@ class Page
   end
 
   def link_chain_to_string(link_chain)
-    string = link_chain.first.title_string + " "
+    string_aggregator = StringAggregator.new(link_chain.first.title_string) << " "
+    #string_aggregator = link_chain.first.title_string << " " #Side effects!
+    #string_aggregator = link_chain.first.title_string + " "
+
     link_chain.each_with_index do |chain_item, index|
-      string << ", which " unless index == 0
-      string << chain_item.immediate_link_string(link_chain[0..index])
+      string_aggregator << ", which " unless index == 0
+      string_aggregator << chain_item.immediate_link_string(link_chain[0..index])
     end
-    string << "."
+    string_aggregator << "."
+    result = string_aggregator.to_s
+    result
   end
 
   def build_link_chain_without_loop
@@ -209,9 +214,10 @@ class Page
 
   def total_backlink_count_string
     return "" if self.total_backlink_count == 0
-    res = "#{title_string}"
-    res << ", which links to #{direct_link.title_string}," if direct_link
-    res << " has #{total_backlink_count} backlinks"
+    string_aggregator = StringAggregator.new("#{title_string}")
+    string_aggregator << ", which links to #{direct_link.title_string}," if direct_link
+    string_aggregator << " has #{total_backlink_count} backlinks"
+    res = string_aggregator.to_s
     return res
   end
 
@@ -232,3 +238,18 @@ class Page
   end
 end
 
+class StringAggregator
+  def initialize(first_string = nil)
+    @array = []
+    @array << first_string unless first_string.nil?
+  end
+
+  def <<(string)
+    @array << string
+    self
+  end
+
+  def to_s
+    @array.join
+  end
+end

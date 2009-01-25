@@ -5,20 +5,31 @@ require "rubygems"
 require "xml"
 
 class XmlHandler
+  def read_and_get_value
+    @xml_parser.read
+    return @xml_parser.value
+  end
+
+  def node_name_is?(name)
+    return (@xml_parser.node_type == XML::Reader::TYPE_ELEMENT and @xml_parser.name == name)
+  end
+
   def parse_next_page_details
-    title, text = nil, nil
+    title, page_id, text = nil, nil, nil
 
     raise if @finished
 
     while (read_result = @xml_parser.read and not (@xml_parser.node_type == XML::Reader::TYPE_END_ELEMENT and @xml_parser.name == "mediawiki"))
       raise if read_result == -1
-      if (@xml_parser.node_type == XML::Reader::TYPE_ELEMENT and @xml_parser.name == "title")
-        @xml_parser.read
-        title = @xml_parser.value
-      elsif (@xml_parser.node_type == XML::Reader::TYPE_ELEMENT and @xml_parser.name == "text")
-        @xml_parser.read
-        text = @xml_parser.value
-        return {:title => title, :text => text}
+      if node_name_is?("title")
+        title = read_and_get_value
+      elsif (node_name_is?("id") and page_id == nil)
+        page_id_string = read_and_get_value
+        raise if page_id_string[0..0] == "0"
+        page_id = Integer(page_id_string)
+      elsif node_name_is?("text")
+        text = read_and_get_value
+        return {:title => title, :page_id => page_id, :text => text}
       end
     end
     set_finished
@@ -48,8 +59,8 @@ class ManuallyMadePageXmlParser
   def parse_next_page(xml_handler, title_hash)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
-      title, text = parse_result[:title], parse_result[:text]
-      result = @repository.new_page_if_valid(title, text, title_hash)
+      title, page_id, text = parse_result[:title], parse_result[:page_id], parse_result[:text]
+      result = @repository.new_page_if_valid(title, page_id, text, title_hash)
       break unless result.nil?
     end
     result

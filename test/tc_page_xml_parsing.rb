@@ -19,6 +19,58 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_expected_size expected_number_mainspace_pages, mainspace_pages
   end
 
+  def test_parse_article_id
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => 42})
+    second_mainspace_page_xml_element =  test_helper_xml_creation_object.generate_mainspace_page({:page_id => 67})
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element, second_mainspace_page_xml_element])
+    page_xml_parser = PageXmlParser.new(xml_file)
+    pages = page_xml_parser.mainspace_pages
+    assert_has_page_id pages[0], 42
+    assert_has_page_id pages[1], 67
+  end
+
+  def test_reject_zero_page_id
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => 0})
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
+    assert_raise(RuntimeError) do
+      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser.mainspace_pages
+    end
+  end
+
+  def test_reject_negative_page_id
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => -1})
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
+    assert_raise(RuntimeError) do
+      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser.mainspace_pages
+    end
+  end
+
+  def test_reject_non_numeric_page_id
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => "text"})
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
+    assert_raise(ArgumentError) do
+      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser.mainspace_pages
+    end
+  end
+
+  def test_reject_octal_page_id
+    test_helper_xml_creation_object = TestHelperXmlCreation.new
+    mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => "07"})
+    xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
+    assert_raise(RuntimeError) do
+      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser.mainspace_pages
+    end
+  end
+
+
   def dont_test_get_text_contents
     expected_number_mainspace_pages = 2
     number_non_mainspace_pages = 3
@@ -114,6 +166,9 @@ class TestXmlParsing < Test::Unit::TestCase
     end
   end
 
+  def assert_has_page_id(page, expected_id)
+    assert_equal expected_id, page.page_id
+  end
 
   def create_pages_given_page_elements(page_elements)
     test_helper_xml_creation_object = TestHelperXmlCreation.new

@@ -23,6 +23,13 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to original_page, linked_to_page
   end
 
+  def test_page_id_available
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ [nil, []] ]
+    page, = test_helper_page_creation_object.create_network(network)
+    assert_has_page_id page, 1
+  end
+
   def test_ignore_hatnotes
     test_helper_page_creation_object = TestHelperPageCreation.new
     non_target_page = test_helper_page_creation_object.create_page
@@ -222,6 +229,10 @@ class TestPage < Test::Unit::TestCase
     pages = test_helper_page_creation_object.create_network(network)
     Page.build_links(pages)
     assert_direct_link_to pages[0], pages[1], "Link to similar title does not work."
+  end
+
+  def assert_has_page_id(page, expected_id)
+    assert_equal expected_id, page.page_id
   end
 
   def assert_direct_link_to(originating_page, expected_target_page, message = nil)

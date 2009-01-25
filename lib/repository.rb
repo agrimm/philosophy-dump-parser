@@ -1,16 +1,15 @@
 class Repository
 
-  def new_page_if_valid(title, text, article_hash)
-    if page_parameters_valid?(title, text)
-      return Page.new(title, text, article_hash)
+  def new_page_if_valid(title, page_id, text, article_hash)
+    if page_parameters_valid?(title)
+      return Page.new(title, page_id, text, article_hash)
     else
       return nil
     end
   end
 
-  def page_parameters_valid?(title, text)
+  def page_parameters_valid?(title)
     return false unless page_title_valid?(title)
-    #return false if text.empty?
     return true
   end
 

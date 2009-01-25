@@ -87,9 +87,9 @@ class TestHelperXmlCreation
   end
 
   def generate_mainspace_page(options)
-    defaults = {:mainspace_page_revision_text_text => self.mainspace_page_revision_text_text, :title_text=> self.generate_random_title_text}
+    defaults = {:mainspace_page_revision_text_text => self.mainspace_page_revision_text_text, :page_id => generate_page_id, :title_text=> self.generate_random_title_text}
     options = defaults.merge(options)
-    page_id = generate_page_id
+    page_id = options[:page_id]
     title_text = options[:title_text]
     mainspace_page_revision_text_text = options[:mainspace_page_revision_text_text]
     res = \
@@ -214,8 +214,14 @@ class MockRepository
     @real_repository = Repository.new #yeah, I could use inheritance
   end
 
+  def page_id
+    @page_id ||= 0
+    @page_id += 1
+    @page_id
+  end
+
   def new_page_if_valid(title, text, article_hash)
-    return @real_repository.new_page_if_valid(title, text, article_hash)
+    return @real_repository.new_page_if_valid(title, page_id, text, article_hash)
   end
 end
 

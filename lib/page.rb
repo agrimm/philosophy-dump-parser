@@ -1,11 +1,13 @@
 require "wiki_text"
 
 class Page
-  attr_reader :title, :backlinks, :total_backlink_count
+  attr_reader :title, :page_id, :backlinks, :total_backlink_count
 
-  def initialize(title, text, article_hash = nil)
+  def initialize(title, page_id, text, article_hash)
     #raise unless self.class.valid?(title, text)
+    raise if page_id < 1
     @title = title
+    @page_id = page_id
     @backlinks = []
     @total_backlink_count = 0
     wiki_text = WikiText.new(String(text))

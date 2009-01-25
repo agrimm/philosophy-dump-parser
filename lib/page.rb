@@ -77,9 +77,8 @@ class Page
     debug_mode = false
     return unless debug_mode
     STDERR.puts "Item dumped to #{filename} at #{Time.now.to_s}"
-    dump = Marshal.dump(object)
     File.open(filename, "w") do |f|
-      f.write(dump)
+      Marshal.dump(object, f)
     end
   end
 

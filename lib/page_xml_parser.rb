@@ -82,7 +82,7 @@ class ManuallyMadePageXmlParser
     title_hash = load_title_hash
     xml_handler = XmlHandler.new(@page_xml_file)
     subfile_number = 1
-    max_pages_per_dump = 1000 #Can be anything
+    max_pages_per_dump = 10000 #Can be anything
     pages = []
     while (page = parse_next_page(xml_handler, title_hash))
       pages << page
@@ -106,8 +106,7 @@ class ManuallyMadePageXmlParser
     pages = []
     each_dumpfilename do |filename|
       File.open(filename) do |f|
-        dump = f.read
-        pages += Marshal.load(dump)
+        pages.concat(Marshal.load(f))
       end
     end
     debug_mode = false
@@ -159,9 +158,8 @@ class ManuallyMadePageXmlParser
   end
 
   def dump_title_list(title_list)
-    dump = Marshal.dump(title_list)
     File.open("temp/title_list.bin", "w") do |f|
-      f.write(dump)
+      Marshal.dump(title_list, f)
     end
   end
 
@@ -173,8 +171,7 @@ class ManuallyMadePageXmlParser
   def load_title_hash
     title_list = nil
     File.open("temp/title_list.bin") do |f|
-      dump = f.read
-      title_list = Marshal.load(dump)
+      title_list = Marshal.load(f)
     end
     title_hash = {}
     title_list.each {|title| title_hash[title] = true}

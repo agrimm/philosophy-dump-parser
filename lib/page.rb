@@ -80,7 +80,7 @@ class Page
 
   #Title string - this is for display purposes, not for searching
   def title_string
-    @title
+    @title || "Page number #{@page_id}"
   end
 
   def direct_link

@@ -23,6 +23,12 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to original_page, linked_to_page
   end
 
+  def test_handle_empty_titles
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    page = test_helper_page_creation_object.create_page({:title=>nil, :article_list=>{}})
+    assert_page_title_string_equal page, "Page number 1", "Can't handle empty titles"
+  end
+
   def test_page_id_available
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ [nil, []] ]
@@ -265,6 +271,10 @@ class TestPage < Test::Unit::TestCase
   def assert_object_smaller_than(object, excessive_size)
     dump = Marshal.dump(object)
     assert dump.size < excessive_size, "Object #{dump.inspect} should be smaller than #{excessive_size} but the dump file has a size of #{dump.size}"
+  end
+
+  def assert_page_title_string_equal(page, expected_title_string, message=nil)
+    assert_equal expected_title_string, page.title_string, message
   end
 
 end

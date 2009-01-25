@@ -14,6 +14,7 @@ class Repository
   end
 
   def page_title_valid?(title)
+    return true if title.nil? #Allow nil titles
     return false if title =~ /:/
     raise "Invalid title #{title}" if title != Page.upcase_first_letter(title)
     return true

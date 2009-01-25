@@ -1,7 +1,8 @@
 require "wiki_text"
 
 class Page
-  attr_reader :title, :page_id, :backlinks, :total_backlink_count
+
+  attr_reader :title, :page_id
 
   def initialize(title, page_id, text, article_hash)
     #raise unless self.class.valid?(title, text)
@@ -9,8 +10,8 @@ class Page
     raise if article_hash.nil?
     @title = title
     @page_id = page_id
-    @backlinks = []
-    @total_backlink_count = 0
+    #@backlinks = [] #Initialize when first used
+    #@total_backlink_count = 0 #Initialize when first used
     wiki_text = WikiText.new(String(text))
     articles_linked_somewhere_in_the_text = wiki_text.linked_articles
     @link_ought_to_exist = determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
@@ -169,22 +170,32 @@ class Page
   end
 
   def add_backlink(page)
+    @backlinks ||= []
     @backlinks << page
   end
 
+  def backlinks
+    @backlinks ||= []
+  end
+
   def direct_backlink_count
-    @backlinks.size
+    backlinks.size
   end
 
   def backlinks_string
-    if @backlinks.empty?
+    if backlinks.empty?
       return ""
     else
-      return "#{@backlinks.size} pages link to #{title_string}"
+      return "#{backlinks.size} pages link to #{title_string}"
     end
   end
 
+  def total_backlink_count
+    @total_backlink_count || 0
+  end
+
   def increment_total_backlink_count
+    @total_backlink_count ||= 0
     @total_backlink_count += 1
   end
 
@@ -199,11 +210,11 @@ class Page
 
   #The number of backlinks merged by this page
   def backlink_merge_count
-    counts_in_backlinks = @backlinks.map {|page| page.total_backlink_count}
+    counts_in_backlinks = backlinks.map {|page| page.total_backlink_count}
     indirect_backlink_total = counts_in_backlinks.inject(0) {|total, value| total + value}
     largest_count_in_backlinks = (counts_in_backlinks.max or 0)
     indirect_backlink_merging = indirect_backlink_total - largest_count_in_backlinks
-    direct_backlink_merging = [@backlinks.size - 1, 0].max
+    direct_backlink_merging = [backlinks.size - 1, 0].max
     backlink_merge_count = indirect_backlink_merging + direct_backlink_merging
     backlink_merge_count
   end

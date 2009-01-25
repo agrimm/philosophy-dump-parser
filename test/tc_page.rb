@@ -14,15 +14,10 @@ class TestPage < Test::Unit::TestCase
   def test_links_work_with_lower_case
     lowercase_title = "finnska"
     uppercase_title = "Finnska"
-    test_helper_xml_creation_object = TestHelperXmlCreation.new
 
-    linked_to_page_title = uppercase_title
-    linked_to_page_text = test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
-    linked_to_page = Page.new(linked_to_page_title, linked_to_page_text)
-
-    original_page_title = test_helper_xml_creation_object.generate_random_title_text
-    original_page_text = test_helper_xml_creation_object.mainspace_page_revision_text_text_with_one_specified_link(lowercase_title)
-    original_page = Page.new(original_page_title, original_page_text)
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ [nil, [lowercase_title]], [uppercase_title, []] ]
+    original_page, linked_to_page = test_helper_page_creation_object.create_network(network)
 
     Page.build_links([original_page, linked_to_page])
     assert_direct_link_to original_page, linked_to_page

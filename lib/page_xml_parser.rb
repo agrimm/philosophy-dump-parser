@@ -1,5 +1,6 @@
 require "yaml"
 require "page"
+require "repository"
 require "rubygems"
 require "xml"
 
@@ -41,13 +42,14 @@ class ManuallyMadePageXmlParser
   def initialize(page_xml_file, tasklist_filename = nil)
     @page_xml_file = page_xml_file
     @tasks = TaskList.new(tasklist_filename)
+    @repository = Repository.new
   end
 
   def parse_next_page(xml_handler, title_hash)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
       title, text = parse_result[:title], parse_result[:text]
-      result = Page.new_if_valid(title, text, title_hash)
+      result = @repository.new_page_if_valid(title, text, title_hash)
       break unless result.nil?
     end
     result
@@ -64,7 +66,7 @@ class ManuallyMadePageXmlParser
   def parse_next_valid_title(xml_handler)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
-      result = parse_result[:title] if Page.title_valid?(parse_result[:title])
+      result = parse_result[:title] if @repository.page_title_valid?(parse_result[:title])
       break unless result.nil?
     end
     result

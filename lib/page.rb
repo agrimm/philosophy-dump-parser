@@ -4,7 +4,7 @@ class Page
   attr_reader :title, :backlinks, :total_backlink_count
 
   def initialize(title, text, article_hash = nil)
-    raise unless self.class.valid?(title, text)
+    #raise unless self.class.valid?(title, text)
     @title = title
     @backlinks = []
     @total_backlink_count = 0
@@ -12,26 +12,6 @@ class Page
     @articles_linked_somewhere_in_the_text = wiki_text.linked_articles
     @link_ought_to_exist = determine_if_link_ought_to_exist(@articles_linked_somewhere_in_the_text, article_hash)
     shortern_link_list_if_possible(@articles_linked_somewhere_in_the_text, article_hash)
-  end
-
-  def self.new_if_valid(title, text, article_hash)
-    if valid?(title, text)
-      return new(title, text, article_hash)
-    else
-      return nil
-    end
-  end
-
-  def self.valid?(title, text)
-    return false unless title_valid?(title)
-    #return false if text.empty?
-    return true
-  end
-
-  def self.title_valid?(title)
-    return false if title =~ /:/
-    raise "Invalid title #{title}" if title != upcase_first_letter(title)
-    return true
   end
 
   def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)

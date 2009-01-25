@@ -209,16 +209,26 @@ IP-talan þín er $3. Vinsamlegast taktu það fram í fyrirspurnum þínum.</te
   end
 end
 
+class MockRepository
+  def initialize
+    @real_repository = Repository.new #yeah, I could use inheritance
+  end
+
+  def new_page_if_valid(title, text, article_hash)
+    return @real_repository.new_page_if_valid(title, text, article_hash)
+  end
+end
 
 class TestHelperPageCreation
   def initialize
     @test_helper_xml_creation_object = TestHelperXmlCreation.new
+    @repository = MockRepository.new
   end
 
   def create_page(options = {})
     defaults = {:title => random_title, :text=> random_text, :article_list => nil}
     options = defaults.merge(options)
-    return Page.new(options[:title], options[:text], options[:article_list])
+    return @repository.new_page_if_valid(options[:title], options[:text], options[:article_list])
   end
 
   def random_title

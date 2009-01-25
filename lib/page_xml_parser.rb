@@ -84,9 +84,9 @@ class ManuallyMadePageXmlParser
   end
 
   def parse_pages_for_titles(xml_handler)
-    titles = []
+    titles = {}
     while (title = parse_next_valid_title(xml_handler))
-      titles << title
+      titles[title] = true
     end
     titles
   end
@@ -134,7 +134,7 @@ class ManuallyMadePageXmlParser
 
   def delete_intermediate_files
     delete_dumpfiles
-    delete_title_list
+    delete_title_hash
   end
 
   def each_dumpfilename
@@ -152,8 +152,8 @@ class ManuallyMadePageXmlParser
     end
   end
 
-  def delete_title_list
-    filename = "temp/title_list.bin"
+  def delete_title_hash
+    filename = "temp/title_hash.bin"
     File.delete(filename) if File.exist?(filename)
   end
 
@@ -164,30 +164,28 @@ class ManuallyMadePageXmlParser
     pages
   end
 
-  def determine_title_list
+  def determine_title_hash
     xml_handler = XmlHandler.new(@page_xml_file)
-    title_list = parse_pages_for_titles(xml_handler)
-    title_list
+    title_hash = parse_pages_for_titles(xml_handler)
+    title_hash
   end
 
-  def dump_title_list(title_list)
-    File.open("temp/title_list.bin", "w") do |f|
-      Marshal.dump(title_list, f)
+  def dump_title_hash(title_hash)
+    File.open("temp/title_hash.bin", "w") do |f|
+      Marshal.dump(title_hash, f)
     end
   end
 
   def build_title_list
-    title_list = determine_title_list
-    dump_title_list(title_list)
+    title_hash = determine_title_hash
+    dump_title_hash(title_hash)
   end
 
   def load_title_hash
-    title_list = nil
-    File.open("temp/title_list.bin") do |f|
-      title_list = Marshal.load(f)
+    title_hash = nil
+    File.open("temp/title_hash.bin") do |f|
+      title_hash = Marshal.load(f)
     end
-    title_hash = {}
-    title_list.each {|title| title_hash[title] = true}
     title_hash
   end
 

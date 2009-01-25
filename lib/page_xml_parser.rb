@@ -74,10 +74,10 @@ class ManuallyMadePageXmlParser
     pages
   end
 
-  def parse_next_valid_title(xml_handler)
+  def parse_next_valid_title_details(xml_handler)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
-      result = parse_result[:title] if @repository.page_title_valid?(parse_result[:title])
+      result = parse_result if @repository.page_title_valid?(parse_result[:title])
       break unless result.nil?
     end
     result
@@ -85,8 +85,8 @@ class ManuallyMadePageXmlParser
 
   def parse_pages_for_titles(xml_handler)
     titles = {}
-    while (title = parse_next_valid_title(xml_handler))
-      titles[title] = true
+    while (details = parse_next_valid_title_details(xml_handler))
+      titles[details[:title]] = details[:page_id]
     end
     titles
   end

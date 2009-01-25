@@ -12,7 +12,7 @@ class TestRepository < Test::Unit::TestCase
 
   def test_all_page_link_chains_sorted_alphabetically
     test_helper_page_creation_object = TestHelperPageCreation.new
-    pages = Array.new(10).map {test_helper_page_creation_object.create_page}
+    pages = Array.new(10).map {test_helper_page_creation_object.create_page({:article_list=>{}})}
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
     Page.build_links(pages)
@@ -21,9 +21,10 @@ class TestRepository < Test::Unit::TestCase
 
   def test_most_common_chain_endings_sorted_by_value
     test_helper_page_creation_object = TestHelperPageCreation.new
-    popular_page = test_helper_page_creation_object.create_page
-    pages = Array.new(10).map {test_helper_page_creation_object.create_page_linking_to_pages([popular_page.title])}
-    pages << popular_page
+    network = [["Popular page", []]]
+    network += [[nil, ["Popular page"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    popular_page = pages[0]
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
     Page.build_links(pages)
@@ -32,9 +33,10 @@ class TestRepository < Test::Unit::TestCase
 
   def test_most_common_chain_endings_also_sorted_alphabetically
     test_helper_page_creation_object = TestHelperPageCreation.new
-    popular_page = test_helper_page_creation_object.create_page
-    pages = Array.new(10).map {test_helper_page_creation_object.create_page_linking_to_pages([popular_page.title])}
-    pages << popular_page
+    network = [["Popular page", []]]
+    network += [[nil, ["Popular page"]]] * 10
+    pages = test_helper_page_creation_object.create_network(network)
+    popular_page = pages[0]
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
     Page.build_links(pages)
@@ -49,9 +51,9 @@ class TestRepository < Test::Unit::TestCase
 
   def test_can_list_most_linked_to_pages
     test_helper_page_creation_object = TestHelperPageCreation.new
-    target_page = test_helper_page_creation_object.create_page
-    linking_page = test_helper_page_creation_object.create_page_linking_to_pages([target_page.title])
-    pages = [target_page, linking_page]
+    network = [["Target page", []], [nil, ["Target page"]]]
+    pages = test_helper_page_creation_object.create_network(network)
+    target_page = pages[0]
     Page.build_links(pages)
     repository = Repository.new(pages)
     expected_string = "1 pages link to #{target_page.title_string}\n"

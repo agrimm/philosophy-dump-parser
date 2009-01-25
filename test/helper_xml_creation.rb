@@ -231,6 +231,14 @@ class TestHelperPageCreation
     @repository = MockRepository.new
   end
 
+  def create_title_hash(pages)
+    result = {}
+    pages.each do |page|
+      result[page.title] = page.page_id
+    end
+    result
+  end
+
   def create_page(options = {})
     defaults = {:title => random_title, :text=> random_text, :article_list => nil}
     options = defaults.merge(options)
@@ -255,7 +263,11 @@ class TestHelperPageCreation
   def create_network(titles_and_links, article_list = nil)
     if article_list.nil?
       article_list = {}
-      titles_and_links.each {|title, links| article_list[title] = true}
+      i = 1
+      titles_and_links.each do |title, links|
+        article_list[title] = i
+        i += 1
+      end
     end
     titles_and_links.map do |title, links|
       text = links.map{|link| "[[#{link}]]"}.join(" and ") + "."

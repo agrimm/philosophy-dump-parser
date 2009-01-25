@@ -6,38 +6,32 @@ class Page
   def initialize(title, page_id, text, article_hash)
     #raise unless self.class.valid?(title, text)
     raise if page_id < 1
+    raise if article_hash.nil?
     @title = title
     @page_id = page_id
     @backlinks = []
     @total_backlink_count = 0
     wiki_text = WikiText.new(String(text))
-    @articles_linked_somewhere_in_the_text = wiki_text.linked_articles
-    @link_ought_to_exist = determine_if_link_ought_to_exist(@articles_linked_somewhere_in_the_text, article_hash)
-    shortern_link_list_if_possible(@articles_linked_somewhere_in_the_text, article_hash)
+    articles_linked_somewhere_in_the_text = wiki_text.linked_articles
+    @link_ought_to_exist = determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
+    @direct_link_page_id = determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
   end
 
   def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
-    return false if article_hash.nil? #It may be possible a direct link ought to be found, but we won't know until we do it
     articles_linked_somewhere_in_the_text.any? do |potential_link|
       is_valid_link_for_hash?(potential_link, article_hash)
     end
   end
 
-  def shortern_link_list_if_possible(articles_linked_somewhere_in_the_text, article_hash)
-    return if article_hash.nil?
-    first_match_index = nil
-    articles_linked_somewhere_in_the_text.each_with_index do |link, i|
+  def determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
+    articles_linked_somewhere_in_the_text.each do |link|
       if is_valid_link_for_hash?(link, article_hash)
-        first_match_index = i
-        articles_linked_somewhere_in_the_text.slice!((first_match_index+1)..-1)
-        articles_linked_somewhere_in_the_text.slice!(0...first_match_index)
-        return
+        return article_hash[self.class.upcase_first_letter(link)]
       end
     end
-    articles_linked_somewhere_in_the_text.slice!(0..-1)
+    return nil
   end
 
-  #Next iteration: change this string manipulation to something correct
   def is_valid_link_for_hash?(link_string, hash)
     return (hash.has_key?(self.class.upcase_first_letter(link_string)) and self.class.upcase_first_letter(link_string) != self.title)
   end
@@ -66,7 +60,7 @@ class Page
 
   def self.build_direct_links(page_array)
     pages = {}
-    page_array.each {|page| pages[page.title] = page}
+    page_array.each {|page| pages[page.page_id] = page}
     raise unless page_array.size == pages.size
 
     pages.each_value do |page|
@@ -94,16 +88,16 @@ class Page
     @direct_link
   end
 
-  def build_links(pages)
-    @direct_link = nil #Just to handle a scenario of @articles_linked_somewhere_in_the_text being empty
-    @articles_linked_somewhere_in_the_text.any? do |linked_article|
-      @direct_link = pages[self.class.upcase_first_letter(linked_article)]
-      @direct_link = nil if @direct_link == self
-      @direct_link
+  def build_links(page_id_hash)
+    if @direct_link_page_id.nil?
+      @direct_link = nil
+      raise "Problem with #{self.title} doesn't link to anything but ought to do so." if @link_ought_to_exist
+    else
+      @direct_link = page_id_hash[@direct_link_page_id]
+      raise if @direct_link.nil?
+      @direct_link.add_backlink(self)
     end
-    @direct_link.add_backlink(self) unless @direct_link.nil?
-    raise "Problem with #{self.title}, which links to (at least) #{@articles_linked_somewhere_in_the_text.inspect}, doesn't link to anything but ought to do so." if @direct_link.nil? and @link_ought_to_exist
-    @articles_linked_somewhere_in_the_text = nil
+    @direct_link_page_id = nil
   end
 
   def immediate_link_string(current_link_chain)

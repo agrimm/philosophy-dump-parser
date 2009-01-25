@@ -32,9 +32,10 @@ class TestPage < Test::Unit::TestCase
 
   def test_ignore_hatnotes
     test_helper_page_creation_object = TestHelperPageCreation.new
-    non_target_page = test_helper_page_creation_object.create_page
-    target_page = test_helper_page_creation_object.create_page
-    original_page = test_helper_page_creation_object.create_page({:text => ":For the pokemon character, see [[#{non_target_page.title}]]\n\n[[#{target_page.title}]]"})
+    non_target_page = test_helper_page_creation_object.create_page({:article_list=>{}})
+    target_page = test_helper_page_creation_object.create_page({:article_list=>{}})
+    title_hash = test_helper_page_creation_object.create_title_hash([non_target_page, target_page])
+    original_page = test_helper_page_creation_object.create_page({:text => ":For the pokemon character, see [[#{non_target_page.title}]]\n\n[[#{target_page.title}]]", :article_list => title_hash})
     Page.build_links([original_page, non_target_page, target_page])
     assert_direct_link_to original_page, target_page
   end
@@ -138,6 +139,15 @@ class TestPage < Test::Unit::TestCase
     assert_equal mergeless_page_expected_string, mergeless_page_actual_string, "Mergeless page doesn't have an empty string"
   end
 
+  def test_use_title_hash
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [[nil, ["Aardvark"]], ["Zebra", []]]
+    bogus_hash = {"Aardvark" => 2}
+    pages= test_helper_page_creation_object.create_network(network, bogus_hash)
+    Page.build_links(pages)
+    assert_direct_link_to pages[0], pages[1], "The title hash isn't being used to its full extent"
+  end
+
   def test_complain_if_link_thought_to_exist_doesnt_exist
     test_helper_page_creation_object = TestHelperPageCreation.new
     page = test_helper_page_creation_object.create_page_linking_to_pages(["Nonexistent page"], {"Nonexistent page" => true})
@@ -162,6 +172,13 @@ class TestPage < Test::Unit::TestCase
     bogus_hash = {"Event Horizon" => true}
     pages= test_helper_page_creation_object.create_network(network, bogus_hash)
     assert_raise(RuntimeError) {Page.build_links(pages)}
+  end
+
+  def test_trim_down_page
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [[nil, ["Supercalifragilisticexpialidotious floccinaucinihilipilification"]], ["Supercalifragilisticexpialidotious floccinaucinihilipilification",[]]]
+    pages= test_helper_page_creation_object.create_network(network)
+    assert_object_smaller_than pages[0], 240
   end
 
   def test_link_shortening
@@ -243,6 +260,11 @@ class TestPage < Test::Unit::TestCase
   def assert_link_chain_without_loop_matches(originating_page, expected_chain)
     actual_chain = originating_page.link_chain_without_loop
     assert_equal expected_chain, actual_chain
+  end
+
+  def assert_object_smaller_than(object, excessive_size)
+    dump = Marshal.dump(object)
+    assert dump.size < excessive_size, "Object #{dump.inspect} should be smaller than #{excessive_size} but the dump file has a size of #{dump.size}"
   end
 
 end

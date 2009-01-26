@@ -132,6 +132,7 @@ class TestXmlParsing < Test::Unit::TestCase
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
     page_xml_parser = PageXmlParser.new(xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
+    assert_direct_link_to mainspace_pages[1], nil, "Test setup problem: links between pages isn't what it should be"
     assert_equal "#{mainspace_pages[0].title_string} links to #{mainspace_pages[1].title_string}, which links to nothing.", mainspace_pages[0].link_chain_string
   end
 
@@ -147,9 +148,9 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_equal expected_size, array.size
   end
 
-  def assert_direct_link_to(originating_page, expected_target_page)
+  def assert_direct_link_to(originating_page, expected_target_page, message = nil)
     actual_target_page = originating_page.direct_link
-    assert_equal expected_target_page, actual_target_page
+    assert_equal expected_target_page, actual_target_page, message
   end
 
   def assert_parsing_works_for_title(parsed_title, unparsed_title)

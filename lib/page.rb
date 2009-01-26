@@ -60,14 +60,17 @@ class Page
   end
 
   def self.build_direct_links(page_array)
-    pages = {}
-    page_array.each {|page| pages[page.page_id] = page}
-    raise unless page_array.size == pages.size
-
+    pages = self.build_page_id_hash(page_array)
     pages.each_value do |page|
       page.build_links(pages)
     end
-    GC.start if pages.size > 20
+  end
+
+  def self.build_page_id_hash(page_array)
+    pages = {}
+    page_array.each {|page| pages[page.page_id] = page}
+    raise unless page_array.size == pages.size
+    pages
   end
 
   def self.build_total_backlink_counts(page_array)

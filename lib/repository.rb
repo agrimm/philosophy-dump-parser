@@ -29,29 +29,28 @@ class Repository
     end
   end
 
-  def analysis_output_string(res = "")
-    self.class.do_dump(@pages, "analysis_output_string1.bin")
-    res << all_link_chain_strings
-    self.class.do_dump(@pages, "analysis_output_string2.bin")
-    res << most_common_chain_endings_string
-    self.class.do_dump(@pages, "analysis_output_string3.bin")
-    res << most_backlinks_string
-    self.class.do_dump(@pages, "analysis_output_string4.bin")
-    res << most_total_backlinks_string
-    self.class.do_dump(@pages, "analysis_output_string5.bin")
-    res << most_backlinks_merged_string
-    self.class.do_dump(@pages, "analysis_output_string6.bin")
-    res << page_count_string
-    self.class.do_dump(@pages, "analysis_output_string7.bin")
+  def analysis_output(res = "")
+    self.class.do_dump(@pages, "analysis_output1.bin")
+    all_link_chains_output(res)
+    self.class.do_dump(@pages, "analysis_output2.bin")
+    most_common_chain_endings_output(res)
+    self.class.do_dump(@pages, "analysis_output3.bin")
+    most_backlinks_output(res)
+    self.class.do_dump(@pages, "analysis_output4.bin")
+    most_total_backlinks_output(res)
+    self.class.do_dump(@pages, "analysis_output5.bin")
+    most_backlinks_merged_output(res)
+    self.class.do_dump(@pages, "analysis_output6.bin")
+    page_count_output(res)
+    self.class.do_dump(@pages, "analysis_output7.bin")
     res
   end
 
-  def all_link_chain_strings
-    res = do_reporting(:title_string, :link_chain_string)
+  def all_link_chains_output(res = "")
+    do_reporting(:title_string, :link_chain_string, res)
   end
 
-  def most_common_chain_endings_string
-    res = ""
+  def most_common_chain_endings_output(res = "")
     chain_ends = {}
     @pages.each do |page|
       chain_end = page.link_chain_end
@@ -77,20 +76,20 @@ class Repository
     @pages.size
   end
 
-  def page_count_string
-    res = "#{page_count} pages total."
+  def page_count_output(res = "")
+    res << "#{page_count} pages total."
   end
 
-  def most_backlinks_string
-    res = do_reporting(:direct_backlink_count, :backlinks_string)
+  def most_backlinks_output(res = "")
+    do_reporting(:direct_backlink_count, :backlinks_string, res)
   end
 
-  def most_total_backlinks_string
-    do_reporting(:total_backlink_count, :total_backlink_count_string)
+  def most_total_backlinks_output(res = "")
+    do_reporting(:total_backlink_count, :total_backlink_count_string, res)
   end
 
-  def most_backlinks_merged_string
-    do_reporting(:backlink_merge_count, :backlink_merge_count_string)
+  def most_backlinks_merged_output(res = "")
+    do_reporting(:backlink_merge_count, :backlink_merge_count_string, res)
   end
 
   def do_reporting(sorting_method, string_method, result = "")

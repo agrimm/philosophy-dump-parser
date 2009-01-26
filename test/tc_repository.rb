@@ -57,7 +57,7 @@ class TestRepository < Test::Unit::TestCase
     Page.build_links(pages)
     repository = Repository.new(pages)
     expected_string = "1 pages link to #{target_page.title_string}\n"
-    assert_equal expected_string, repository.most_backlinks_string
+    assert_equal expected_string, repository.most_backlinks_output
   end
 
   def test_backlink_counts
@@ -103,13 +103,13 @@ class TestRepository < Test::Unit::TestCase
     expected_report << popular_page_1.backlink_merge_count_string << "\n"
     expected_report << philosophy_page.backlink_merge_count_string << "\n"
     expected_report << popular_page_2.backlink_merge_count_string << "\n"
-    actual_report = repository.most_backlinks_merged_string
+    actual_report = repository.most_backlinks_merged_output
     assert_equal expected_report, actual_report
   end
 
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
-    res = repository.analysis_output_string
+    res = repository.analysis_output
     previous_title = nil
     line_count = 0
     res.each_line do |line|
@@ -124,7 +124,7 @@ class TestRepository < Test::Unit::TestCase
 
   def assert_most_common_chain_endings_sorted_by_value(pages)
     repository = Repository.new(pages)
-    res = repository.most_common_chain_endings_string
+    res = repository.most_common_chain_endings_output
     previous_value = nil
     res.split("\n")[1..-1].each do |line|
       current_value = Integer(line.split.last)
@@ -134,7 +134,7 @@ class TestRepository < Test::Unit::TestCase
 
   def assert_most_common_chain_endings_also_sorted_alphabetically(pages)
     repository = Repository.new(pages)
-    res = repository.most_common_chain_endings_string
+    res = repository.most_common_chain_endings_output
     previous_value = nil
     previous_title = nil
     assert res.split("\n")[0] == "Most common chain ending:"

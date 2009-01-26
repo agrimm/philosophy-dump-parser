@@ -76,6 +76,7 @@ class Page
       linked_to_pages.each do |linked_to_page|
         linked_to_page.increment_total_backlink_count
       end
+      page.clear_link_chain_cache
     end
   end
 
@@ -150,6 +151,10 @@ class Page
 
   def link_chain
     @link_chain ||= build_link_chain
+  end
+
+  def clear_link_chain_cache
+    @link_chain = nil
   end
 
   def link_chain_without_loop

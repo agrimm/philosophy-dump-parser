@@ -59,6 +59,7 @@ class Repository
         chain_ends[chain_end] = 0
       end
       chain_ends[chain_end] += 1
+      page.clear_link_chain_cache
     end
     chain_ends_a = chain_ends.sort_by {|page, value| [value, page.title_string]}
     res << "Most common chain ending:\n"
@@ -97,6 +98,7 @@ class Repository
     pages.each do |page|
       addition = page.send(string_method)
       result << addition << "\n" unless addition.empty?
+      page.clear_link_chain_cache #Clean up for memory purposes - may not be applicable for all string_methods though
     end
     result
   end

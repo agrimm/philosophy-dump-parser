@@ -34,7 +34,7 @@ class Page
   end
 
   def is_valid_link_for_hash?(link_string, hash)
-    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and self.class.upcase_first_letter(link_string) != self.title)
+    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and hash[self.class.upcase_first_letter(link_string)] != self.page_id)
   end
 
   def self.upcase_first_letter(string)
@@ -94,11 +94,12 @@ class Page
   end
 
   def build_links(page_id_hash)
-    if @direct_link_page_id.nil?
+    if (@direct_link_page_id.nil? or @direct_link_page_id == @page_id)
       @direct_link = nil
-      raise "Problem with #{self.title} doesn't link to anything but ought to do so." if @link_ought_to_exist
+      raise "Problem with #{self.title_string} doesn't link to anything but ought to do so." if @link_ought_to_exist
     else
       @direct_link = page_id_hash[@direct_link_page_id]
+      raise if @direct_link.equal?(self)
       raise if @direct_link.nil?
       @direct_link.add_backlink(self)
     end

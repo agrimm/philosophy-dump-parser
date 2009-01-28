@@ -259,20 +259,32 @@ class TestHelperPageCreation
     create_page({:text => text, :article_list => article_list})
   end
 
+  def create_title_hash_given_titles_only(titles_and_links)
+    title_hash = {}
+    i = 1
+    titles_and_links.each do |title, links|
+      title_hash[title] = i
+      i += 1
+    end
+    title_hash
+  end
+
   #Create several pages with the specified links
-  def create_network(titles_and_links, article_list = nil)
-    if article_list.nil?
-      article_list = {}
-      i = 1
-      titles_and_links.each do |title, links|
-        article_list[title] = i
-        i += 1
-      end
+  def create_network(titles_and_links, title_hash = nil)
+    new_titles_and_links = titles_and_links.map do |title, links|
+      title = random_title if title.nil?
+      [title, links]
+    end
+    create_network_allowing_nil_titles(titles_and_links, title_hash)
+  end
+
+  def create_network_allowing_nil_titles(titles_and_links, title_hash = nil)
+    if title_hash.nil?
+      title_hash = create_title_hash_given_titles_only(titles_and_links)
     end
     titles_and_links.map do |title, links|
       text = links.map{|link| "[[#{link}]]"}.join(" and ") + "."
-      title = random_title if title.nil?
-      page = create_page({:title => title, :text => text, :article_list => article_list})
+      page = create_page({:title => title, :text => text, :article_list => title_hash})
       page
     end
   end

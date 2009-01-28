@@ -154,6 +154,16 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to pages[0], pages[1], "The title hash isn't being used to its full extent"
   end
 
+  def test_ignore_link_to_self_even_if_using_nil_titles
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    legitimately_nil_title = nil
+    network = [[legitimately_nil_title, ["Aardvark"]] ]
+    legitimate_hash = {"Aardvark" => 1}
+    pages = test_helper_page_creation_object.create_network_allowing_nil_titles(network, legitimate_hash)
+    Page.build_links(pages)
+    assert_direct_link_to pages[0], nil, "Ignoring self links isn't working as it should"
+  end
+
   def test_complain_if_link_thought_to_exist_doesnt_exist
     test_helper_page_creation_object = TestHelperPageCreation.new
     page = test_helper_page_creation_object.create_page_linking_to_pages(["Nonexistent page"], {"Nonexistent page" => true})

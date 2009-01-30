@@ -110,7 +110,7 @@ class PageXmlParser
 
   def create_page_dump(pages, subfile_number)
     dump = Marshal.dump(pages)
-    File.open("dumpfile#{subfile_number}.bin", "w") do |f|
+    File.open("temp/dumpfile#{subfile_number}.bin", "w") do |f|
       f.write(dump)
     end
   end
@@ -133,7 +133,7 @@ class PageXmlParser
   def each_dumpfilename
     i = 0
     while (i += 1)
-      filename = "dumpfile#{i}.bin"
+      filename = "temp/dumpfile#{i}.bin"
       break unless File.exist?(filename)
       yield filename if block_given?
     end

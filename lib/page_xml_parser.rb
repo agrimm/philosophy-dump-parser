@@ -49,7 +49,7 @@ class XmlHandler
 
 end
 
-class ManuallyMadePageXmlParser
+class PageXmlParser
   def initialize(page_xml_file, tasklist_filename = nil)
     @page_xml_file = page_xml_file
     @tasks = TaskList.new(tasklist_filename)
@@ -121,13 +121,6 @@ class ManuallyMadePageXmlParser
       File.open(filename) do |f|
         pages.concat(Marshal.load(f))
       end
-    end
-    debug_mode = false
-    if debug_mode
-      actual_title_list = pages.map{|p| p.title}
-      check = determine_title_list
-      raise "pages minus check is #{(actual_title_list-check).inspect}" unless actual_title_list - check == []
-      raise "check minus actual title list is #{(check - actual_title_list).inspect}" unless check - actual_title_list == []
     end
     pages
   end
@@ -283,5 +276,4 @@ class TaskList
   end
 
 end
-PageXmlParser = ManuallyMadePageXmlParser
 

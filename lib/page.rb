@@ -119,9 +119,6 @@ class Page
 
   def link_chain_to_string(link_chain)
     string_aggregator = StringAggregator.new(link_chain.first.title_string) << " "
-    #string_aggregator = link_chain.first.title_string << " " #Side effects!
-    #string_aggregator = link_chain.first.title_string + " "
-
     link_chain.each_with_index do |chain_item, index|
       string_aggregator << ", which " unless index == 0
       string_aggregator << chain_item.immediate_link_string(link_chain[0..index])

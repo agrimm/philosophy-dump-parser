@@ -12,7 +12,7 @@ class Page
     @page_id = page_id
     #@backlinks = [] #Initialize when first used
     #@total_backlink_count = 0 #Initialize when first used
-    wiki_text = WikiText.new(String(text))
+    wiki_text = WikiText.new(text)
     articles_linked_somewhere_in_the_text = wiki_text.linked_articles
     @direct_link_page_id = determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
   end

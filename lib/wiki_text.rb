@@ -4,7 +4,8 @@ class WikiText
   attr_reader :linked_articles
 
   def initialize(document_text)
-    @linked_articles = calculate_linked_articles(document_text)
+    text_copy = String.new(document_text)
+    @linked_articles = calculate_linked_articles(text_copy)
   end
 
   #Remove from MediaWiki text anything that is surrounded by <nowiki>

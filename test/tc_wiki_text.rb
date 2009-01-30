@@ -13,6 +13,13 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_first_article_is(wiki_text_with_content, "Genese")
   end
 
+  def test_handle_text_non_destructively
+    original_text = "{{template}}"
+    untouched_text = "{{template}}"
+    wiki_text = create_wiki_text(original_text)
+    assert_equal original_text, untouched_text, "WikiText is destructive on text"
+  end
+
   def test_parse_wiki_text_without_content
     assert_first_article_is(wiki_text_without_content, nil)
   end
@@ -24,6 +31,9 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_equal expected_article, actual_first_article
   end
 
+  def create_wiki_text(text)
+    WikiText.new(text)
+  end
 
   def wiki_text_with_content
     "[[Image:Gutenberg Bible.jpg|thumb|450px|Baibel]]

@@ -1,4 +1,4 @@
-class Repository
+class RepositoryParser
 
   def new_page_if_valid(title, page_id, text, article_hash)
     if page_parameters_valid?(title)
@@ -19,6 +19,11 @@ class Repository
     raise "Invalid title #{title}" if title != Page.upcase_first_letter(title)
     return true
   end
+
+end
+
+
+class Repository
 
   def self.do_dump(object, filename)
     debug_mode = false
@@ -68,7 +73,7 @@ class Repository
     res
   end
 
-  def initialize(pages = [])
+  def initialize(pages)
     @pages = pages
   end
 
@@ -103,3 +108,4 @@ class Repository
   end
 
 end
+

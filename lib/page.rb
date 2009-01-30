@@ -14,14 +14,7 @@ class Page
     #@total_backlink_count = 0 #Initialize when first used
     wiki_text = WikiText.new(String(text))
     articles_linked_somewhere_in_the_text = wiki_text.linked_articles
-    @link_ought_to_exist = determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
     @direct_link_page_id = determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
-  end
-
-  def determine_if_link_ought_to_exist(articles_linked_somewhere_in_the_text, article_hash)
-    articles_linked_somewhere_in_the_text.any? do |potential_link|
-      is_valid_link_for_hash?(potential_link, article_hash)
-    end
   end
 
   def determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
@@ -94,16 +87,16 @@ class Page
   end
 
   def build_links(page_id_hash)
-    if (@direct_link_page_id.nil? or @direct_link_page_id == @page_id)
+    raise if @direct_link_page_id == @page_id
+    if @direct_link_page_id.nil?
       @direct_link = nil
-      raise "Problem with #{self.title_string} doesn't link to anything but ought to do so." if @link_ought_to_exist
     else
       @direct_link = page_id_hash[@direct_link_page_id]
       raise if @direct_link.equal?(self)
       raise if @direct_link.nil?
       @direct_link.add_backlink(self)
+      @direct_link_page_id = nil
     end
-    @direct_link_page_id = nil
   end
 
   def immediate_link_string(current_link_chain)

@@ -4,3 +4,9 @@ Ultimately this will save data in a format suitable for loading into a Rails web
 
 To get such an XML file, go to http://download.wikimedia.org/backup-index.html and then choose your language edition, and download a dump that contains the latest revision (as opposed to all revisions) of all articles.
 
+To do:
+
+Speed up analysis, preferably using less memory.
+
+Handle mainspace articles that have colons in their names.
+

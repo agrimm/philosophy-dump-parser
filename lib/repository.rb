@@ -36,17 +36,17 @@ class Repository
 
   def analysis_output(res = "")
     self.class.do_dump(@pages, "analysis_output1.bin")
-    all_link_chains_output(res)
+    all_link_chains_output(res) if @configuration.include_output?(:all_link_chains)
     self.class.do_dump(@pages, "analysis_output2.bin")
-    most_common_chain_endings_output(res)
+    most_common_chain_endings_output(res) if @configuration.include_output?(:most_common_chain_endings)
     self.class.do_dump(@pages, "analysis_output3.bin")
-    most_backlinks_output(res)
+    most_backlinks_output(res) if @configuration.include_output?(:most_backlinks)
     self.class.do_dump(@pages, "analysis_output4.bin")
-    most_total_backlinks_output(res)
+    most_total_backlinks_output(res) if @configuration.include_output?(:most_total_backlinks)
     self.class.do_dump(@pages, "analysis_output5.bin")
-    most_backlinks_merged_output(res)
+    most_backlinks_merged_output(res) if @configuration.include_output?(:most_backlinks_merged)
     self.class.do_dump(@pages, "analysis_output6.bin")
-    page_count_output(res)
+    page_count_output(res) if @configuration.include_output?(:page_count)
     self.class.do_dump(@pages, "analysis_output7.bin")
     res
   end
@@ -73,8 +73,17 @@ class Repository
     res
   end
 
-  def initialize(pages)
+  def self.new_with_configuration(pages, options)
+    configuration = RepositoryConfiguration.new(options)
+    self.new(pages, configuration)
+  end
+
+  def initialize(pages, configuration = nil)
     @pages = pages
+    @configuration = configuration
+    if @configuration.nil?
+      @configuration = RepositoryConfiguration.new({})
+    end
   end
 
   def page_count
@@ -109,3 +118,13 @@ class Repository
 
 end
 
+class RepositoryConfiguration
+  def initialize(options)
+    defaults = {:outputs => [:all_link_chains, :most_common_chain_endings, :most_backlinks, :most_total_backlinks, :most_backlinks_merged, :page_count]}
+    @options = defaults.merge(options)
+  end
+
+  def include_output?(output)
+    return @options[:outputs].include?(output)
+  end
+end

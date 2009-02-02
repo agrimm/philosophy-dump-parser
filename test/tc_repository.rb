@@ -107,6 +107,26 @@ class TestRepository < Test::Unit::TestCase
     assert_equal expected_report, actual_report
   end
 
+  def test_output_configurability
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["A", []] ] + [ [nil, ["A"]] ] * 9
+    configuration = {:outputs => [:page_count]}
+    repository = test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    assert_equal "10 pages total.", repository.analysis_output
+  end
+
+  def test_output_configurability_further
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["A", []], ["B", ["A"]], ["C", ["A"]] ]
+    outputs = [:most_backlinks, :most_total_backlinks, :most_backlinks_merged]
+    configuration = {:outputs => outputs}
+    repository = test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    expected_output = repository.most_backlinks_output
+    expected_output << repository.most_total_backlinks_output
+    expected_output << repository.most_backlinks_merged_output
+    assert_equal expected_output, repository.analysis_output
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output

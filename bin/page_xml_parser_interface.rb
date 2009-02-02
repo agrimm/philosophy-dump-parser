@@ -20,13 +20,25 @@ require "rdoc/usage"
 
 class ProcessXmlFile
 
+  def load_configuration
+    filename = "configuration.yml"
+    unless File.exist?(filename)
+      STDERR.puts "Configuration file #{filename} not found"
+      STDERR.puts "Try copying configuration.example.yml" if File.exist?("configuration.example.yml")
+      exit 1
+    end
+    configuration_options = YAML::load_file(filename)
+    configuration_options
+  end
+
   def main_method(filename)
     puts "#{filename}\n\n"
     File.open(filename) do |xml_file|
       page_xml_parser = PageXmlParser.new(xml_file, "tasks.yml")
+      configuration = load_configuration
       mainspace_pages = page_xml_parser.mainspace_pages
       next unless page_xml_parser.finished?
-      repository = Repository.new(mainspace_pages)
+      repository = Repository.new_with_configuration(mainspace_pages, configuration)
       repository.analysis_output(STDOUT)
       puts
     end

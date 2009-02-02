@@ -288,5 +288,13 @@ class TestHelperPageCreation
       page
     end
   end
+
+  def create_repository_given_network_description_and_configuration(network_description, configuration)
+    pages = create_network(network_description)
+    Page.build_links(pages)
+    repository = Repository.new_with_configuration(pages, configuration)
+    repository
+  end
+
 end
 

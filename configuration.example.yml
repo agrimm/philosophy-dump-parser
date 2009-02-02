@@ -1,0 +1,8 @@
+---
+:outputs:
+- :all_link_chains
+- :most_common_chain_endings
+- :most_backlinks
+- :most_total_backlinks
+- :most_backlinks_merged
+- :page_count

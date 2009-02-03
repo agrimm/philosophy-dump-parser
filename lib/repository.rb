@@ -65,6 +65,8 @@ class Repository
       chain_ends[chain_end] += 1
       page.clear_link_chain_cache
     end
+    minimum_threshold = @configuration.most_common_chain_endings_minimum_threshold
+    chain_ends.reject!{|page, value| value < minimum_threshold} unless minimum_threshold.nil?
     chain_ends_a = chain_ends.sort_by {|page, value| [value, page.title_string]}
     res << "Most common chain ending:\n"
     chain_ends_a.each do |page, frequency|
@@ -126,5 +128,10 @@ class RepositoryConfiguration
 
   def include_output?(output)
     return @options[:outputs].include?(output)
+  end
+
+  def most_common_chain_endings_minimum_threshold
+    return nil if @options[:most_common_chain_endings_output].nil?
+    @options[:most_common_chain_endings_output][:minimum_threshold]
   end
 end

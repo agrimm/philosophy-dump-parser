@@ -127,6 +127,16 @@ class TestRepository < Test::Unit::TestCase
     assert_equal expected_output, repository.analysis_output
   end
 
+  def test_minimum_threshold_configurable_for_most_common_chain_endings
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["A", []], [nil, ["A"]], [nil, ["A"]], ["B", []], [nil,["B"]] ]
+    configuration = {:outputs => [:most_common_chain_endings], :most_common_chain_endings_output => {:minimum_threshold=>3}}
+    repository = test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    expected_output = "Most common chain ending:\nA\t3\n"
+    actual_output = repository.analysis_output
+    assert_equal expected_output, actual_output, "Can't configure the minimum threshold for most_common_chain_endings_output"
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output

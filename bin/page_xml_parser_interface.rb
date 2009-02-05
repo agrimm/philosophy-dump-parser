@@ -16,7 +16,6 @@ require "page_xml_parser"
 require "page"
 require "repository"
 require "rubygems"
-require "rdoc/usage"
 
 class ProcessXmlFile
 
@@ -47,7 +46,10 @@ class ProcessXmlFile
 end
 
 if $0 == __FILE__
-  RDoc::usage("usage") unless ARGV.size == 1
+  unless ARGV.size == 1
+    require "rdoc/usage"
+    RDoc::usage("usage")
+  end
   ProcessXmlFile.new.main_method(ARGV[0])
 end
 

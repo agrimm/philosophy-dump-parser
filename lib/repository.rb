@@ -57,7 +57,8 @@ class Repository
   end
 
   def all_link_chains_output(res = "")
-    do_reporting(:title_string, :link_chain_string, res)
+    minimum_threshold = nil #Doesn't make sense for string outputs
+    do_reporting(:title_string, minimum_threshold, :link_chain_string, res)
   end
 
   def most_common_chain_endings_output(res = "")
@@ -102,19 +103,21 @@ class Repository
   end
 
   def most_backlinks_output(res = "")
-    do_reporting(:direct_backlink_count, :backlinks_string, res)
+    do_reporting(:direct_backlink_count, @configuration.most_backlinks_minimum_threshold, :backlinks_string, res)
   end
 
   def most_total_backlinks_output(res = "")
-    do_reporting(:total_backlink_count, :total_backlink_count_string, res)
+    do_reporting(:total_backlink_count, @configuration.most_total_backlinks_minimum_threshold, :total_backlink_count_string, res)
   end
 
   def most_backlinks_merged_output(res = "")
-    do_reporting(:backlink_merge_count, :backlink_merge_count_string, res)
+    do_reporting(:backlink_merge_count, @configuration.most_backlinks_merged_minimum_threshold, :backlink_merge_count_string, res)
   end
 
-  def do_reporting(sorting_method, string_method, result = "")
-    pages = @pages.sort_by {|page| page.send(sorting_method)}
+  def do_reporting(sorting_method, minimum_threshold, string_method, result)
+    pages = @pages
+    pages = pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
+    pages = pages.sort_by {|page| page.send(sorting_method)}
     pages.each do |page|
       addition = page.send(string_method)
       result << addition << "\n" unless addition.empty?
@@ -138,5 +141,20 @@ class RepositoryConfiguration
   def most_common_chain_endings_minimum_threshold
     return nil if @options[:most_common_chain_endings_output].nil?
     @options[:most_common_chain_endings_output][:minimum_threshold]
+  end
+
+  def most_backlinks_minimum_threshold
+    return nil if @options[:most_backlinks_output].nil?
+    @options[:most_backlinks_output][:minimum_threshold]
+  end
+
+  def most_total_backlinks_minimum_threshold
+    return nil if @options[:most_total_backlinks_output].nil?
+    @options[:most_total_backlinks_output][:minimum_threshold]
+  end
+
+  def most_backlinks_merged_minimum_threshold
+    return nil if @options[:most_backlinks_merged_output].nil?
+    @options[:most_backlinks_merged_output][:minimum_threshold]
   end
 end

@@ -128,6 +128,30 @@ class TestRepository < Test::Unit::TestCase
     assert_equal expected_output, actual_output, "Can't configure the minimum threshold for most_common_chain_endings_output"
   end
 
+  def test_minimum_threshold_configurable_for_most_backlinks
+    network = [ ["A", []], [nil, ["A"]], [nil, ["A"]], ["B", []], [nil,["B"]] ]
+    configuration = {:outputs => [:most_backlinks], :most_backlinks_output => {:minimum_threshold=>2}}
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    expected_output = "2 pages link to A\n"
+    assert_analysis_output_equals repository, expected_output, "most_backlinks doesn't have a configurable minimum threshold"
+  end
+
+  def test_minimum_threshold_configurable_for_most_total_backlinks
+    network = [ ["A", []], [nil, ["A"]], [nil, ["A"]], ["B", []], [nil,["B"]] ]
+    configuration = {:outputs => [:most_total_backlinks], :most_total_backlinks_output => {:minimum_threshold=>2}}
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    expected_output = "A has 2 backlinks\n"
+    assert_analysis_output_equals repository, expected_output, "most_total_backlinks doesn't have a configurable minimum threshold"
+  end
+
+  def test_minimum_threshold_configurable_for_most_backlinks_merged
+    network = [ ["A", []], [nil, ["A"]], [nil, ["A"]], [nil, ["A"]], ["B", []], [nil,["B"]], [nil,["B"]] ]
+    configuration = {:outputs => [:most_backlinks_merged], :most_backlinks_merged_output => {:minimum_threshold=>2}}
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    expected_output = "A has merged 2 backlinks\n"
+    assert_analysis_output_equals repository, expected_output, "most_backlinks_merged doesn't have a configurable minimum threshold"
+  end
+
   def assert_page_link_chains_sorted_alphabetically(pages)
     repository = Repository.new(pages)
     res = repository.analysis_output
@@ -166,6 +190,10 @@ class TestRepository < Test::Unit::TestCase
       previous_value = current_value
       previous_title = current_title
     end
+  end
+
+  def assert_analysis_output_equals repository, expected_output, message=nil
+    assert_equal expected_output, repository.analysis_output, message
   end
 
 end

@@ -5,4 +5,14 @@
 - :most_total_backlinks
 - :most_backlinks_merged
 - :page_count
-:title_representation: :none
+:title_representation:
+  :none
+:most_common_chain_endings_output: 
+  :minimum_threshold: 1000
+:most_backlinks_output:
+  :minimum_threshold: 1000
+:most_total_backlinks_output:
+  :minimum_threshold: 1000
+:most_backlinks_merged_output:
+  :minimum_threshold: 1000
+

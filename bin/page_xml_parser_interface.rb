@@ -33,8 +33,8 @@ class ProcessXmlFile
   def main_method(filename)
     puts "#{filename}\n\n"
     File.open(filename) do |xml_file|
-      page_xml_parser = PageXmlParser.new(xml_file, "tasks.yml")
       configuration = load_configuration
+      page_xml_parser = PageXmlParser.new(xml_file, configuration, "tasks.yml")
       mainspace_pages = page_xml_parser.mainspace_pages
       next unless page_xml_parser.finished?
       repository = Repository.new_with_configuration(mainspace_pages, configuration)

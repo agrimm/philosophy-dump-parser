@@ -14,7 +14,7 @@ class TestXmlParsing < Test::Unit::TestCase
     number_non_mainspace_pages = 3
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     page_xml_file = test_helper_xml_creation_object.createXmlFile(expected_number_mainspace_pages, number_non_mainspace_pages)
-    page_xml_parser = PageXmlParser.new(page_xml_file)
+    page_xml_parser = create_xml_parser(page_xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     assert_expected_size expected_number_mainspace_pages, mainspace_pages
   end
@@ -24,7 +24,7 @@ class TestXmlParsing < Test::Unit::TestCase
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => 42})
     second_mainspace_page_xml_element =  test_helper_xml_creation_object.generate_mainspace_page({:page_id => 67})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element, second_mainspace_page_xml_element])
-    page_xml_parser = PageXmlParser.new(xml_file)
+    page_xml_parser = create_xml_parser(xml_file)
     pages = page_xml_parser.mainspace_pages
     assert_has_page_id pages[0], 42
     assert_has_page_id pages[1], 67
@@ -35,7 +35,7 @@ class TestXmlParsing < Test::Unit::TestCase
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => 0})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
     assert_raise(RuntimeError) do
-      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser = create_xml_parser(xml_file)
       page_xml_parser.mainspace_pages
     end
   end
@@ -45,7 +45,7 @@ class TestXmlParsing < Test::Unit::TestCase
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => -1})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
     assert_raise(RuntimeError) do
-      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser = create_xml_parser(xml_file)
       page_xml_parser.mainspace_pages
     end
   end
@@ -55,7 +55,7 @@ class TestXmlParsing < Test::Unit::TestCase
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => "text"})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
     assert_raise(ArgumentError) do
-      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser = create_xml_parser(xml_file)
       page_xml_parser.mainspace_pages
     end
   end
@@ -65,7 +65,7 @@ class TestXmlParsing < Test::Unit::TestCase
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => "07"})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
     assert_raise(RuntimeError) do
-      page_xml_parser = PageXmlParser.new(xml_file)
+      page_xml_parser = create_xml_parser(xml_file)
       page_xml_parser.mainspace_pages
     end
   end
@@ -76,7 +76,7 @@ class TestXmlParsing < Test::Unit::TestCase
     number_non_mainspace_pages = 3
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     page_xml_file = test_helper_xml_creation_object.createXmlFile(expected_number_mainspace_pages, number_non_mainspace_pages)
-    page_xml_parser = PageXmlParser.new(page_xml_file)
+    page_xml_parser = create_xml_parser(page_xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     page = mainspace_pages.first
     expected_text = test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
@@ -111,7 +111,7 @@ class TestXmlParsing < Test::Unit::TestCase
   def test_find_linked_article
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
-    page_xml_parser = PageXmlParser.new(xml_file)
+    page_xml_parser = create_xml_parser(xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     first_page = mainspace_pages[0]
     linked_to_page = mainspace_pages[1]
@@ -121,7 +121,7 @@ class TestXmlParsing < Test::Unit::TestCase
   def test_dont_find_yourself
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.circular_reference_only_mainspace_page])
-    page_xml_parser = PageXmlParser.new(xml_file)
+    page_xml_parser = create_xml_parser(xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     page = mainspace_pages.first
     assert_direct_link_to(page, nil)
@@ -130,7 +130,7 @@ class TestXmlParsing < Test::Unit::TestCase
   def test_link_chain_string_with_deadend
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
-    page_xml_parser = PageXmlParser.new(xml_file)
+    page_xml_parser = create_xml_parser(xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     assert_direct_link_to mainspace_pages[1], nil, "Test setup problem: links between pages isn't what it should be"
     assert_equal "#{mainspace_pages[0].title_string} links to #{mainspace_pages[1].title_string}, which links to nothing.", mainspace_pages[0].link_chain_string
@@ -139,7 +139,7 @@ class TestXmlParsing < Test::Unit::TestCase
   def test_link_chain_can_handle_infinite_loop
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements(test_helper_xml_creation_object.generate_pair_of_infinitely_looping_pages)
-    page_xml_parser = PageXmlParser.new(xml_file)
+    page_xml_parser = create_xml_parser(xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     assert_equal "#{mainspace_pages[0].title_string} links to #{mainspace_pages[1].title_string}, which links to previously encountered #{mainspace_pages[0].title_string}.", mainspace_pages[0].link_chain_string
   end
@@ -174,9 +174,13 @@ class TestXmlParsing < Test::Unit::TestCase
   def create_pages_given_page_elements(page_elements)
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements(page_elements)
-    page_xml_parser = PageXmlParser.new(xml_file)
+    page_xml_parser = create_xml_parser(xml_file)
     mainspace_pages = page_xml_parser.mainspace_pages
     mainspace_pages
+  end
+
+  def create_xml_parser(xml_file)
+    parser = PageXmlParser.new(xml_file, {}, nil)
   end
 
 end

@@ -2,6 +2,7 @@ class RepositoryParser
 
   def new_page_if_valid(title, page_id, text, article_hash)
     if page_parameters_valid?(title)
+      title = nil if @nil_titles
       return Page.new(title, page_id, text, article_hash)
     else
       return nil
@@ -18,6 +19,10 @@ class RepositoryParser
     return false if title =~ /:/
     raise "Invalid title #{title}" if title != Page.upcase_first_letter(title)
     return true
+  end
+
+  def initialize(options)
+    @nil_titles = options[:title_representation] == :none
   end
 
 end

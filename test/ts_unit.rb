@@ -6,4 +6,5 @@ require "tc_page"
 require "tc_repository"
 require "tc_wiki_text"
 require "tc_string_aggregator"
+require "tc_repository_parser"
 

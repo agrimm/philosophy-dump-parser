@@ -8,34 +8,32 @@ require "repository"
 class TestRepository < Test::Unit::TestCase
 
   def setup
+    @test_helper_page_creation_object = TestHelperPageCreation.new
   end
 
   def test_all_page_link_chains_sorted_alphabetically
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    pages = Array.new(10).map {test_helper_page_creation_object.create_page({:article_list=>{}})}
-    pages.reverse
+    pages = @test_helper_page_creation_object.create_network([[nil,[]]] * 10)
     pages[2], pages[7] = pages[7], pages[2]
     Page.build_links(pages)
     assert_page_link_chains_sorted_alphabetically(pages)
   end
 
+  #Check that this method actually tests anything successfully
   def test_most_common_chain_endings_sorted_by_value
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Popular page", []]]
     network += [[nil, ["Popular page"]]] * 10
-    pages = test_helper_page_creation_object.create_network(network)
+    pages = @test_helper_page_creation_object.create_network(network)
     popular_page = pages[0]
-    pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
     Page.build_links(pages)
     assert_most_common_chain_endings_sorted_by_value(pages)
   end
 
+  #Check that this method actually tests anything successfully
   def test_most_common_chain_endings_also_sorted_alphabetically
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Popular page", []]]
     network += [[nil, ["Popular page"]]] * 10
-    pages = test_helper_page_creation_object.create_network(network)
+    pages = @test_helper_page_creation_object.create_network(network)
     popular_page = pages[0]
     pages.reverse
     pages[2], pages[7] = pages[7], pages[2]
@@ -44,15 +42,14 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_can_count_pages
-    pages = Array.new(10).map {TestHelperPageCreation.new}
+    pages = @test_helper_page_creation_object.create_network([[nil,[]]] * 10)
     repository = Repository.new(pages)
     assert_equal 10, repository.page_count
   end
 
   def test_can_list_most_linked_to_pages
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Target page", []], [nil, ["Target page"]]]
-    pages = test_helper_page_creation_object.create_network(network)
+    pages = @test_helper_page_creation_object.create_network(network)
     target_page = pages[0]
     Page.build_links(pages)
     repository = Repository.new(pages)
@@ -61,10 +58,9 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_backlink_counts
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]] ]
     network += [[nil, ["Philosophy page"]]] * 10
-    pages = test_helper_page_creation_object.create_network(network)
+    pages = @test_helper_page_creation_object.create_network(network)
     philosophy_page, looping_page, *general_pages = pages
     Page.build_links(pages)
     philosophy_expected_backlink_count = pages.size - 2 #Looping page doesn't contribute to the count. This is probably bad.
@@ -76,10 +72,9 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_backlink_count_reporting
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], ["Popular page", ["Philosophy page"]] ]
     network += [[nil, ["Popular page"]]] * 10
-    pages = test_helper_page_creation_object.create_network(network)
+    pages = @test_helper_page_creation_object.create_network(network)
     philosophy_page, looping_page, popular_page, *general_pages = pages
     Page.build_links(pages)
     expected_popular_page_string = "#{popular_page.title}, which links to Philosophy page, has 10 backlinks"
@@ -88,11 +83,10 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_merge_count_reporting
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]], ["Popular page 2", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
-    pages = test_helper_page_creation_object.create_network(network)
+    pages = @test_helper_page_creation_object.create_network(network)
     Page.build_links(pages)
     philosophy_page = pages.first
     popular_page_1 = pages[1]
@@ -108,19 +102,17 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_output_configurability
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["A", []] ] + [ [nil, ["A"]] ] * 9
     configuration = {:outputs => [:page_count]}
-    repository = test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
     assert_equal "10 pages total.", repository.analysis_output
   end
 
   def test_output_configurability_further
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["A", []], ["B", ["A"]], ["C", ["A"]] ]
     outputs = [:most_backlinks, :most_total_backlinks, :most_backlinks_merged]
     configuration = {:outputs => outputs}
-    repository = test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
     expected_output = repository.most_backlinks_output
     expected_output << repository.most_total_backlinks_output
     expected_output << repository.most_backlinks_merged_output
@@ -128,10 +120,9 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_minimum_threshold_configurable_for_most_common_chain_endings
-    test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["A", []], [nil, ["A"]], [nil, ["A"]], ["B", []], [nil,["B"]] ]
     configuration = {:outputs => [:most_common_chain_endings], :most_common_chain_endings_output => {:minimum_threshold=>3}}
-    repository = test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
     expected_output = "Most common chain ending:\nA\t3\n"
     actual_output = repository.analysis_output
     assert_equal expected_output, actual_output, "Can't configure the minimum threshold for most_common_chain_endings_output"

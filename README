@@ -10,3 +10,14 @@ Speed up analysis, preferably using less memory.
 
 Handle mainspace articles that have colons in their names.
 
+Consider how to handle footnotes - should Philosophy count as linking to A.C. Grayling, the author of a cited publication? What about an explanatory footnote in the United Kingdom?
+
+Find the longest chain from any article to its loop.
+
+Find out how long the terminating loops are.
+
+Add the option to ignore certain links such as dates or Greek Language.
+
+Handle templates containing text content, such as Template:Day.
+
+Distinguish between articles and redirects?

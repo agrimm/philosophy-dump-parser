@@ -10,7 +10,9 @@ Speed up analysis, preferably using less memory.
 
 Handle mainspace articles that have colons in their names.
 
-Consider how to handle footnotes - should Philosophy count as linking to A.C. Grayling, the author of a cited publication? What about an explanatory footnote in the United Kingdom?
+Consider how to handle footnotes.
+Should Philosophy count as linking to A.C. Grayling, the author of a cited publication?
+What about an explanatory footnote in the United Kingdom?
 
 Find the longest chain from any article to its loop.
 

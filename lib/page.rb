@@ -3,6 +3,8 @@ require "database_connection"
 
 class Page < ActiveRecord::Base
 
+  belongs_to :repository
+
   attr_reader :title, :page_id
 
   def initialize(title, page_id, text, article_hash)

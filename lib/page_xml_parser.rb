@@ -53,7 +53,7 @@ class PageXmlParser
   def initialize(page_xml_file, options, tasklist_filename = nil)
     @page_xml_file = page_xml_file
     @tasks = TaskList.new(tasklist_filename)
-    @repository_parser = RepositoryParser.new(options)
+    @repository_parser = Repository.new([])
   end
 
   def parse_next_page(xml_handler, title_hash)

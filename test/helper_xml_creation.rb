@@ -211,7 +211,7 @@ end
 
 class MockRepositoryParser
   def initialize
-    @real_repository_parser = RepositoryParser.new({}) #yeah, I could use inheritance
+    @real_repository_parser = Repository.new([]) #yeah, I could use inheritance
   end
 
   def page_id

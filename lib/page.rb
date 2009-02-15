@@ -1,10 +1,12 @@
 require "wiki_text"
+require "database_connection"
 
-class Page
+class Page < ActiveRecord::Base
 
   attr_reader :title, :page_id
 
   def initialize(title, page_id, text, article_hash)
+    super({})
     #raise unless self.class.valid?(title, text)
     raise if page_id < 1
     raise if article_hash.nil?

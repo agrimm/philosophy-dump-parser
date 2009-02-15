@@ -1,0 +1,3 @@
+adapter: sqlite3
+database: db/parser.sqlite3
+

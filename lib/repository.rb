@@ -5,7 +5,11 @@ class Repository < ActiveRecord::Base
   def new_page_if_valid(title, page_id, text, article_hash)
     if page_parameters_valid?(title)
       title = nil if @nil_titles
-      return Page.new(title, page_id, text, article_hash)
+      page = Page.new(title, page_id, text, article_hash)
+      page.repository = self
+      page.save
+      pages << page
+      return page
     else
       return nil
     end
@@ -33,19 +37,19 @@ class Repository < ActiveRecord::Base
   end
 
   def analysis_output(res = "")
-    self.class.do_dump(@pages, "analysis_output1.bin")
+    self.class.do_dump(@old_pages, "analysis_output1.bin")
     all_link_chains_output(res) if @configuration.include_output?(:all_link_chains)
-    self.class.do_dump(@pages, "analysis_output2.bin")
+    self.class.do_dump(@old_pages, "analysis_output2.bin")
     most_common_chain_endings_output(res) if @configuration.include_output?(:most_common_chain_endings)
-    self.class.do_dump(@pages, "analysis_output3.bin")
+    self.class.do_dump(@old_pages, "analysis_output3.bin")
     most_backlinks_output(res) if @configuration.include_output?(:most_backlinks)
-    self.class.do_dump(@pages, "analysis_output4.bin")
+    self.class.do_dump(@old_pages, "analysis_output4.bin")
     most_total_backlinks_output(res) if @configuration.include_output?(:most_total_backlinks)
-    self.class.do_dump(@pages, "analysis_output5.bin")
+    self.class.do_dump(@old_pages, "analysis_output5.bin")
     most_backlinks_merged_output(res) if @configuration.include_output?(:most_backlinks_merged)
-    self.class.do_dump(@pages, "analysis_output6.bin")
+    self.class.do_dump(@old_pages, "analysis_output6.bin")
     page_count_output(res) if @configuration.include_output?(:page_count)
-    self.class.do_dump(@pages, "analysis_output7.bin")
+    self.class.do_dump(@old_pages, "analysis_output7.bin")
     res
   end
 
@@ -56,7 +60,7 @@ class Repository < ActiveRecord::Base
 
   def most_common_chain_endings_output(res = "")
     chain_ends = {}
-    @pages.each do |page|
+    @old_pages.each do |page|
       chain_end = page.link_chain_end
       unless chain_ends[chain_end]
         chain_ends[chain_end] = 0
@@ -81,7 +85,7 @@ class Repository < ActiveRecord::Base
 
   def initialize(pages, configuration = nil)
     super({})
-    @pages = pages
+    @old_pages = pages
     @configuration = configuration
     if @configuration.nil?
       @configuration = RepositoryConfiguration.new({})
@@ -89,7 +93,7 @@ class Repository < ActiveRecord::Base
   end
 
   def page_count
-    @pages.size
+    @old_pages.size
   end
 
   def page_count_output(res = "")
@@ -109,7 +113,7 @@ class Repository < ActiveRecord::Base
   end
 
   def do_reporting(sorting_method, minimum_threshold, string_method, result)
-    pages = @pages
+    pages = @old_pages
     pages = pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
     pages = pages.sort_by {|page| page.send(sorting_method)}
     pages.each do |page|

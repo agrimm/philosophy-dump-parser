@@ -84,11 +84,8 @@ class PageXmlParser
   end
 
   def parse_pages_for_titles(xml_handler)
-    titles = {}
-    while (details = parse_next_valid_title_details(xml_handler))
-      titles[details[:title]] = details[:page_id]
-    end
-    titles
+    while page = parse_next_page(xml_handler, {}) do end
+    nil
   end
 
   def create_dumps
@@ -127,7 +124,6 @@ class PageXmlParser
 
   def delete_intermediate_files
     delete_dumpfiles
-    delete_title_hash
   end
 
   def each_dumpfilename
@@ -145,11 +141,6 @@ class PageXmlParser
     end
   end
 
-  def delete_title_hash
-    filename = "temp/title_hash.bin"
-    File.delete(filename) if File.exist?(filename)
-  end
-
   def build_links
     pages = load_dumps
     Page.build_links(pages)
@@ -159,25 +150,17 @@ class PageXmlParser
 
   def determine_title_hash
     xml_handler = XmlHandler.new(@page_xml_file)
-    title_hash = parse_pages_for_titles(xml_handler)
-    title_hash
-  end
-
-  def dump_title_hash(title_hash)
-    File.open("temp/title_hash.bin", "w") do |f|
-      Marshal.dump(title_hash, f)
-    end
+    parse_pages_for_titles(xml_handler)
   end
 
   def build_title_list
     title_hash = determine_title_hash
-    dump_title_hash(title_hash)
   end
 
   def load_title_hash
-    title_hash = nil
-    File.open("temp/title_hash.bin") do |f|
-      title_hash = Marshal.load(f)
+    title_hash = {}
+    @repository_parser.pages.each do |page|
+       title_hash[page.title] = page.local_id
     end
     title_hash
   end

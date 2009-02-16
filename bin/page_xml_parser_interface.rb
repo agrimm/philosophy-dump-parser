@@ -46,6 +46,8 @@ class ProcessXmlFile
 end
 
 if $0 == __FILE__
+  STDERR.puts "Program being rebuilt - probably does not work right now."
+  exit
   unless ARGV.size == 1
     require "rdoc/usage"
     RDoc::usage("usage")

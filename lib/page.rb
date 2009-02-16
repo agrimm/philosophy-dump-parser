@@ -5,10 +5,12 @@ class Page < ActiveRecord::Base
 
   belongs_to :repository
 
-  attr_reader :title, :page_id
+  def page_id
+    local_id
+  end
 
   def initialize(title, page_id, text, article_hash)
-    super({})
+    super({:title=>title, :local_id => page_id})
     #raise unless self.class.valid?(title, text)
     raise if page_id < 1
     raise if article_hash.nil?

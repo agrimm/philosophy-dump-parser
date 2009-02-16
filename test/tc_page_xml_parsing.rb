@@ -6,10 +6,13 @@ require "helper_xml_creation"
 require "page_xml_parser"
 
 class TestXmlParsing < Test::Unit::TestCase
-  def setup
+  def almost_setup
+    Repository.destroy_all
+    Page.destroy_all
   end
 
   def test_count_mainspace_pages
+    almost_setup
     expected_number_mainspace_pages = 2
     number_non_mainspace_pages = 3
     test_helper_xml_creation_object = TestHelperXmlCreation.new
@@ -20,6 +23,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_parse_article_id
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => 42})
     second_mainspace_page_xml_element =  test_helper_xml_creation_object.generate_mainspace_page({:page_id => 67})
@@ -31,6 +35,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_reject_zero_page_id
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => 0})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
@@ -41,6 +46,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_reject_negative_page_id
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => -1})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
@@ -51,6 +57,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_reject_non_numeric_page_id
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => "text"})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
@@ -61,6 +68,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_reject_octal_page_id
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     mainspace_page_xml_element = test_helper_xml_creation_object.generate_mainspace_page({:page_id => "07"})
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element])
@@ -85,12 +93,14 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_parse_out_quotations
+    almost_setup
     quotation_containing_title = "&quot;Weird Al&quot; Yankovic"
     quotation_exorcised_title = "\"Weird Al\" Yankovic"
     assert_parsing_works_for_title(quotation_exorcised_title, quotation_containing_title)
   end
 
   def test_parse_out_ampersands
+    almost_setup
     ampersand_containing_title = "Command &amp; Conquer"
     ampersand_exorcised_title = "Command & Conquer"
     assert_parsing_works_for_title(ampersand_exorcised_title, ampersand_containing_title)
@@ -109,6 +119,7 @@ class TestXmlParsing < Test::Unit::TestCase
   #However, test_get_text_contents tests less than and greater than in page text.
 
   def test_find_linked_article
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
     page_xml_parser = create_xml_parser(xml_file)
@@ -119,6 +130,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_dont_find_yourself
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.circular_reference_only_mainspace_page])
     page_xml_parser = create_xml_parser(xml_file)
@@ -128,6 +140,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_link_chain_string_with_deadend
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
     page_xml_parser = create_xml_parser(xml_file)
@@ -137,6 +150,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def test_link_chain_can_handle_infinite_loop
+    almost_setup
     test_helper_xml_creation_object = TestHelperXmlCreation.new
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements(test_helper_xml_creation_object.generate_pair_of_infinitely_looping_pages)
     page_xml_parser = create_xml_parser(xml_file)

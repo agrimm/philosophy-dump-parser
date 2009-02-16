@@ -9,18 +9,26 @@ class Page < ActiveRecord::Base
     local_id
   end
 
-  def initialize(title, page_id, text, article_hash)
+  def initialize(title, page_id, text, repository)
     super({:title=>title, :local_id => page_id})
-    #raise unless self.class.valid?(title, text)
+    self.repository = repository
     raise if page_id < 1
-    raise if article_hash.nil?
-    @title = title
-    @page_id = page_id
     #@backlinks = [] #Initialize when first used
     #@total_backlink_count = 0 #Initialize when first used
+    add_text(text)
+  end
+
+  #Add text to set a direct link
+  def add_text(text)
     wiki_text = WikiText.new(text)
-    articles_linked_somewhere_in_the_text = wiki_text.linked_articles
-    @direct_link_page_id = determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
+    @direct_link_page_id = nil
+    wiki_text.linked_articles.each do |potential_title|
+      page = repository.pages.find_by_title(self.class.upcase_first_letter(potential_title))
+      if (page and page != self)
+        @direct_link_page_id = page.local_id
+        break
+      end
+    end
   end
 
   def determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
@@ -84,32 +92,32 @@ class Page < ActiveRecord::Base
 
   #Title string - this is for display purposes, not for searching
   def title_string
-    @title || "Page number #{@page_id}"
+    self.title || "Page number #{page_id}"
   end
 
   def direct_link
-    raise unless (@direct_link or defined?(@direct_link))
+    raise "Problem with #{self.inspect}" unless (@direct_link or defined?(@direct_link))
     @direct_link
   end
 
   def build_links(page_id_hash)
-    raise if @direct_link_page_id == @page_id
+    raise if @direct_link_page_id == self.local_id
     if @direct_link_page_id.nil?
       @direct_link = nil
     else
       @direct_link = page_id_hash[@direct_link_page_id]
       raise if @direct_link.equal?(self)
       raise if @direct_link.nil?
-      @direct_link.add_backlink(self)
+      direct_link.add_backlink(self)
       @direct_link_page_id = nil
     end
   end
 
   def immediate_link_string(current_link_chain)
-    if current_link_chain.include?(@direct_link)
-      "links to previously encountered #{@direct_link.title_string}"
-    elsif @direct_link
-      "links to #{@direct_link.title_string}"
+    if current_link_chain.include?(direct_link)
+      "links to previously encountered #{direct_link.title_string}"
+    elsif direct_link
+      "links to #{direct_link.title_string}"
     else
       "links to nothing"
     end

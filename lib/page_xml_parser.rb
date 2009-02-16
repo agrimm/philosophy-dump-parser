@@ -66,14 +66,6 @@ class PageXmlParser
     result
   end
 
-  def parse_pages(xml_handler, title_hash)
-    pages = []
-    while (page = parse_next_page(xml_handler, title_hash))
-      pages << page
-    end
-    pages
-  end
-
   def parse_next_valid_title_details(xml_handler)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
@@ -94,7 +86,9 @@ class PageXmlParser
     subfile_number = 1
     max_pages_per_dump = 10000 #Can be anything
     pages = []
-    while (page = parse_next_page(xml_handler, title_hash))
+    while details = parse_next_valid_title_details(xml_handler)
+      page = Page.find_by_title(details[:title])
+      page.add_text(details[:text])
       pages << page
       if pages.size == max_pages_per_dump
         create_page_dump(pages, subfile_number)

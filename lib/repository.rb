@@ -5,8 +5,7 @@ class Repository < ActiveRecord::Base
   def new_page_if_valid(title, page_id, text, article_hash)
     if page_parameters_valid?(title)
       title = nil if @nil_titles
-      page = Page.new(title, page_id, text, article_hash)
-      page.repository = self
+      page = Page.new(title, page_id, text, self)
       page.save
       pages << page
       return page

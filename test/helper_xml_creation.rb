@@ -282,11 +282,16 @@ class TestHelperPageCreation
     if title_hash.nil?
       title_hash = create_title_hash_given_titles_only(titles_and_links)
     end
-    titles_and_links.map do |title, links|
-      text = links.map{|link| "[[#{link}]]"}.join(" and ") + "."
-      page = create_page({:title => title, :text => text, :article_list => title_hash})
+    pages = titles_and_links.map do |title, links|
+      page = create_page({:title => title, :text => "", :article_list => title_hash})
       page
     end
+    titles_and_links.each_index do |i|
+      title, links = titles_and_links[i]
+      page = pages[i]
+      page.add_text(links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
+    end
+    pages
   end
 
   def create_repository_given_network_description_and_configuration(network_description, configuration)

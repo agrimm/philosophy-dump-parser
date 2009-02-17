@@ -66,7 +66,7 @@ class PageXmlParser
     result
   end
 
-  def parse_next_valid_title_details(xml_handler)
+  def parse_next_valid_page_details(xml_handler)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
       result = parse_result if @repository_parser.page_title_valid?(parse_result[:title])
@@ -81,12 +81,11 @@ class PageXmlParser
   end
 
   def create_dumps
-    title_hash = load_title_hash
     xml_handler = XmlHandler.new(@page_xml_file)
     subfile_number = 1
     max_pages_per_dump = 10000 #Can be anything
     pages = []
-    while details = parse_next_valid_title_details(xml_handler)
+    while details = parse_next_valid_page_details(xml_handler)
       page = Page.find_by_title(details[:title])
       page.add_text(details[:text])
       pages << page
@@ -142,21 +141,9 @@ class PageXmlParser
     pages
   end
 
-  def determine_title_hash
+  def build_title_list
     xml_handler = XmlHandler.new(@page_xml_file)
     parse_pages_for_titles(xml_handler)
-  end
-
-  def build_title_list
-    title_hash = determine_title_hash
-  end
-
-  def load_title_hash
-    title_hash = {}
-    @repository_parser.pages.each do |page|
-       title_hash[page.title] = page.local_id
-    end
-    title_hash
   end
 
   def mainspace_pages

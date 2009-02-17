@@ -31,39 +31,14 @@ class Page < ActiveRecord::Base
     end
   end
 
-  def determine_direct_link_page_id(articles_linked_somewhere_in_the_text, article_hash)
-    articles_linked_somewhere_in_the_text.each do |link|
-      if is_valid_link_for_hash?(link, article_hash)
-        return article_hash[self.class.upcase_first_letter(link)]
-      end
-    end
-    return nil
-  end
-
-  def is_valid_link_for_hash?(link_string, hash)
-    return (hash.has_key?(self.class.upcase_first_letter(link_string)) and hash[self.class.upcase_first_letter(link_string)] != self.page_id)
-  end
-
   def self.upcase_first_letter(string)
     return string if string == ""
     return string[0..0].upcase + string[1..-1]
   end
 
   def self.build_links(page_array)
-    self.do_dump(page_array, "before_build_links.bin")
     self.build_direct_links(page_array)
-    self.do_dump(page_array, "after_direct_links.bin")
     self.build_total_backlink_counts(page_array)
-    self.do_dump(page_array, "after_total_backlinks.bin")
-  end
-
-  def self.do_dump(object, filename)
-    debug_mode = false
-    return unless debug_mode
-    STDERR.puts "Item dumped to #{filename} at #{Time.now.to_s}"
-    File.open(filename, "w") do |f|
-      Marshal.dump(object, f)
-    end
   end
 
   def self.build_direct_links(page_array)
@@ -203,6 +178,7 @@ class Page < ActiveRecord::Base
     end
   end
 
+  #To do: replace with rails goodness
   def total_backlink_count
     @total_backlink_count || 0
   end

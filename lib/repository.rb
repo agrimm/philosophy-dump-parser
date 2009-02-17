@@ -26,29 +26,13 @@ class Repository < ActiveRecord::Base
     return true
   end
 
-  def self.do_dump(object, filename)
-    debug_mode = false
-    return unless debug_mode
-    STDERR.puts "Item dumped to #{filename} at #{Time.now.to_s}"
-    File.open(filename, "w") do |f|
-      Marshal.dump(object, f)
-    end
-  end
-
   def analysis_output(res = "")
-    self.class.do_dump(@old_pages, "analysis_output1.bin")
     all_link_chains_output(res) if @configuration.include_output?(:all_link_chains)
-    self.class.do_dump(@old_pages, "analysis_output2.bin")
     most_common_chain_endings_output(res) if @configuration.include_output?(:most_common_chain_endings)
-    self.class.do_dump(@old_pages, "analysis_output3.bin")
     most_backlinks_output(res) if @configuration.include_output?(:most_backlinks)
-    self.class.do_dump(@old_pages, "analysis_output4.bin")
     most_total_backlinks_output(res) if @configuration.include_output?(:most_total_backlinks)
-    self.class.do_dump(@old_pages, "analysis_output5.bin")
     most_backlinks_merged_output(res) if @configuration.include_output?(:most_backlinks_merged)
-    self.class.do_dump(@old_pages, "analysis_output6.bin")
     page_count_output(res) if @configuration.include_output?(:page_count)
-    self.class.do_dump(@old_pages, "analysis_output7.bin")
     res
   end
 

@@ -15,7 +15,7 @@ class Repository < ActiveRecord::Base
   end
 
   def page_parameters_valid?(title)
-    return false unless page_title_valid?(title)
+    return false unless page_title_valid?(title) #Not heckle proof?
     return true
   end
 

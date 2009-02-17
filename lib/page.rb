@@ -10,11 +10,10 @@ class Page < ActiveRecord::Base
   end
 
   def initialize(title, page_id, text, repository)
-    super({:title=>title, :local_id => page_id})
+    super({:title=>title, :local_id => page_id, :total_backlink_count => 0})
     self.repository = repository
     raise if page_id < 1
     #@backlinks = [] #Initialize when first used
-    #@total_backlink_count = 0 #Initialize when first used
     add_text(text)
   end
 
@@ -60,6 +59,7 @@ class Page < ActiveRecord::Base
       linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
       linked_to_pages.each do |linked_to_page|
         linked_to_page.increment_total_backlink_count
+        linked_to_page.save! #Unit tests pass even without this instruction
       end
       page.clear_link_chain_cache
     end
@@ -178,18 +178,12 @@ class Page < ActiveRecord::Base
     end
   end
 
-  #To do: replace with rails goodness
-  def total_backlink_count
-    @total_backlink_count || 0
-  end
-
   def increment_total_backlink_count
-    @total_backlink_count ||= 0
-    @total_backlink_count += 1
+    self.total_backlink_count += 1
   end
 
   def total_backlink_count_string
-    return "" if self.total_backlink_count == 0
+    return "" if self.total_backlink_count == 0 #Currently not heckle-proof
     string_aggregator = StringAggregator.new("#{title_string}")
     string_aggregator << ", which links to #{direct_link.title_string}," if direct_link
     string_aggregator << " has #{total_backlink_count} backlinks"

@@ -4,6 +4,8 @@ require "database_connection"
 class Page < ActiveRecord::Base
 
   belongs_to :repository
+  belongs_to :direct_link, :class_name => "Page", :foreign_key => "direct_link_id"
+  has_many :backlinks, :class_name => "Page", :foreign_key => "direct_link_id"
 
   def page_id
     local_id
@@ -13,21 +15,21 @@ class Page < ActiveRecord::Base
     super({:title=>title, :local_id => page_id, :total_backlink_count => 0})
     self.repository = repository
     raise if page_id < 1
-    #@backlinks = [] #Initialize when first used
     add_text(text)
   end
 
   #Add text to set a direct link
   def add_text(text)
     wiki_text = WikiText.new(text)
-    @direct_link_page_id = nil
+    self.direct_link = nil
     wiki_text.linked_articles.each do |potential_title|
       page = repository.pages.find_by_title(self.class.upcase_first_letter(potential_title))
       if (page and page != self)
-        @direct_link_page_id = page.local_id
+        self.direct_link = page
         break
       end
     end
+    self.save! #This and other saves are a temporary measure only
   end
 
   def self.upcase_first_letter(string)
@@ -36,56 +38,24 @@ class Page < ActiveRecord::Base
   end
 
   def self.build_links(page_array)
-    self.build_direct_links(page_array)
     self.build_total_backlink_counts(page_array)
   end
 
-  def self.build_direct_links(page_array)
-    pages = self.build_page_id_hash(page_array)
-    pages.each_value do |page|
-      page.build_links(pages)
-    end
-  end
-
-  def self.build_page_id_hash(page_array)
-    pages = {}
-    page_array.each {|page| pages[page.page_id] = page}
-    raise unless page_array.size == pages.size
-    pages
-  end
-
   def self.build_total_backlink_counts(page_array)
-    page_array.each do |page|
+    page_array.first.repository.pages.each do |page| #Unwieldy, but it ought to be a repository method anyway
       linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
       linked_to_pages.each do |linked_to_page|
         linked_to_page.increment_total_backlink_count
-        linked_to_page.save! #Unit tests pass even without this instruction
+        linked_to_page.save!
       end
       page.clear_link_chain_cache
     end
+    page_array.each {|page| page.reload}
   end
 
   #Title string - this is for display purposes, not for searching
   def title_string
     self.title || "Page number #{page_id}"
-  end
-
-  def direct_link
-    raise "Problem with #{self.inspect}" unless (@direct_link or defined?(@direct_link))
-    @direct_link
-  end
-
-  def build_links(page_id_hash)
-    raise if @direct_link_page_id == self.local_id
-    if @direct_link_page_id.nil?
-      @direct_link = nil
-    else
-      @direct_link = page_id_hash[@direct_link_page_id]
-      raise if @direct_link.equal?(self)
-      raise if @direct_link.nil?
-      direct_link.add_backlink(self)
-      @direct_link_page_id = nil
-    end
   end
 
   def immediate_link_string(current_link_chain)
@@ -155,15 +125,6 @@ class Page < ActiveRecord::Base
 
   def link_chain_enters_loop?
     link_chain.last.direct_link
-  end
-
-  def add_backlink(page)
-    @backlinks ||= []
-    @backlinks << page
-  end
-
-  def backlinks
-    @backlinks ||= []
   end
 
   def direct_backlink_count

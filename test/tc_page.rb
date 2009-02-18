@@ -58,11 +58,11 @@ class TestPage < Test::Unit::TestCase
     assert_link_chain_without_loop_matches looping_page, [looping_page] #This feels wrong
   end
 
-  def dont_test_asking_for_link_chains_without_building_links_throws_exception
+  def test_asking_for_link_information_without_building_links_throws_exception
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], [nil, ["Philosophy page"]] ]
     philosophy_page, looping_page, general_page = test_helper_page_creation_object.create_network(network)
-    assert_raise(RuntimeError) {philosophy_page.link_chain}
+    assert_raise(RuntimeError) {philosophy_page.total_backlink_count_string}
   end
 
   def test_backlinks

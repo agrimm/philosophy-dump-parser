@@ -12,7 +12,7 @@ class Page < ActiveRecord::Base
   end
 
   def initialize(title, page_id, text, repository)
-    super({:title=>title, :local_id => page_id, :total_backlink_count => 0})
+    super({:title=>title, :local_id => page_id, :total_backlink_count => nil})
     self.repository = repository
     raise if page_id < 1
     add_text(text)
@@ -42,6 +42,8 @@ class Page < ActiveRecord::Base
   end
 
   def self.build_total_backlink_counts(page_array)
+    page_array.first.repository.pages.each {|page| page.total_backlink_count = 0; page.save!}
+    page_array.each {|page| page.reload}
     page_array.first.repository.pages.each do |page| #Unwieldy, but it ought to be a repository method anyway
       linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
       linked_to_pages.each do |linked_to_page|
@@ -144,6 +146,7 @@ class Page < ActiveRecord::Base
   end
 
   def total_backlink_count_string
+    raise if total_backlink_count.nil?
     return "" if self.total_backlink_count == 0 #Currently not heckle-proof
     string_aggregator = StringAggregator.new("#{title_string}")
     string_aggregator << ", which links to #{direct_link.title_string}," if direct_link

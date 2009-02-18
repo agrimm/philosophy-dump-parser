@@ -77,67 +77,19 @@ class PageXmlParser
 
   def parse_pages_for_titles(xml_handler)
     while page = parse_next_page(xml_handler, {}) do end
-    nil
   end
 
-  def create_dumps
+  def add_text_to_pages
     xml_handler = XmlHandler.new(@page_xml_file)
-    subfile_number = 1
-    max_pages_per_dump = 10000 #Can be anything
-    pages = []
     while details = parse_next_valid_page_details(xml_handler)
       page = Page.find_by_title(details[:title])
       page.add_text(details[:text])
-      pages << page
-      if pages.size == max_pages_per_dump
-        create_page_dump(pages, subfile_number)
-        subfile_number += 1
-        pages = []
-      end
-    end
-    create_page_dump(pages, subfile_number)
-  end
-
-  def create_page_dump(pages, subfile_number)
-    dump = Marshal.dump(pages)
-    File.open("temp/dumpfile#{subfile_number}.bin", "w") do |f|
-      f.write(dump)
-    end
-  end
-
-  def load_dumps
-    pages = []
-    each_dumpfilename do |filename|
-      File.open(filename) do |f|
-        pages.concat(Marshal.load(f))
-      end
-    end
-    pages
-  end
-
-  def delete_intermediate_files
-    delete_dumpfiles
-  end
-
-  def each_dumpfilename
-    i = 0
-    while (i += 1)
-      filename = "temp/dumpfile#{i}.bin"
-      break unless File.exist?(filename)
-      yield filename if block_given?
-    end
-  end
-
-  def delete_dumpfiles
-    each_dumpfilename do |filename|
-      File.delete(filename)
     end
   end
 
   def build_links
-    pages = load_dumps
+    pages = @repository_parser.pages
     Page.build_links(pages)
-    delete_intermediate_files
     pages
   end
 
@@ -147,10 +99,8 @@ class PageXmlParser
   end
 
   def mainspace_pages
-    pages = []
-    delete_intermediate_files if @tasks.first_possible_task_listed?
     build_title_list if @tasks.include_task?(:build_title_list)
-    create_dumps if @tasks.include_task?(:create_dumps)
+    add_text_to_pages if @tasks.include_task?(:create_dumps) #Task list may become obsolete soon, so don't change the internals
     pages = build_links if @tasks.include_task?(:build_links)
     @tasks.write_next_tasks
     STDERR.puts(@tasks.status_report_string) unless @tasks.last_possible_task_completed?
@@ -211,14 +161,6 @@ class TaskList
 
   def last_possible_task_completed?
     last_completed_task == possible_tasks.last
-  end
-
-  def first_listed_task
-    first_listed_task = @tasks.min {|task1, task2| possible_tasks.index(task1) <=> possible_tasks.index(task2)}
-  end
-
-  def first_possible_task_listed?
-    first_listed_task == possible_tasks.first
   end
 
   def next_tasks

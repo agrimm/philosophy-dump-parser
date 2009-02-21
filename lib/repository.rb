@@ -51,6 +51,7 @@ class Repository < ActiveRecord::Base
       chain_ends[chain_end] += 1
       page.clear_link_chain_cache
     end
+    raise "You've loaded me from active record, haven't you??" if @configuration.nil?
     minimum_threshold = @configuration.most_common_chain_endings_minimum_threshold
     chain_ends.reject!{|page, value| value < minimum_threshold} unless minimum_threshold.nil?
     chain_ends_a = chain_ends.sort_by {|page, value| [value, page.title_string]}
@@ -72,6 +73,7 @@ class Repository < ActiveRecord::Base
     if @configuration.nil?
       @configuration = RepositoryConfiguration.new({})
     end
+    raise "Can't happen" if @configuration.nil?
   end
 
   def build_total_backlink_counts

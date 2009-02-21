@@ -17,15 +17,11 @@ class TestRepository < Test::Unit::TestCase
     assert_page_link_chains_sorted_alphabetically(repository)
   end
 
-  #Check that this method actually tests anything successfully
   def test_most_common_chain_endings_sorted_by_value
-    network = [["Popular page", []]]
-    network += [[nil, ["Popular page"]]] * 10
-    pages = @test_helper_page_creation_object.create_network(network)
-    popular_page = pages[0]
-    pages[2], pages[7] = pages[7], pages[2]
-    Page.build_links(pages)
-    assert_most_common_chain_endings_sorted_by_value(pages)
+    network = ["Popular page", "A", "B", "H", "D", "E", "F", "G", "C", "I", "J"].map{|title| [title, ["Popular page"]]}
+    network += ["Aardvark unpopular page", "K"].map{|title| [title, ["Aardvark unpopular page"]]}
+    repository = @test_helper_page_creation_object.create_repository_given_network_description(network)
+    assert_most_common_chain_endings_sorted_by_value(repository)
   end
 
   #Check that this method actually tests anything successfully
@@ -161,13 +157,13 @@ class TestRepository < Test::Unit::TestCase
     assert_equal repository.page_count, line_count
   end
 
-  def assert_most_common_chain_endings_sorted_by_value(pages)
-    repository = Repository.new(pages)
+  def assert_most_common_chain_endings_sorted_by_value(repository)
     res = repository.most_common_chain_endings_output
     previous_value = nil
     res.split("\n")[1..-1].each do |line|
       current_value = Integer(line.split.last)
       assert (previous_value.nil? or previous_value <= current_value)
+      previous_value = current_value
     end
   end
 

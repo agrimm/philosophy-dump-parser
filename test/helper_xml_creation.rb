@@ -210,6 +210,8 @@ IP-talan þín er $3. Vinsamlegast taktu það fram í fyrirspurnum þínum.</te
 end
 
 class MockRepositoryParser
+  attr_accessor :real_repository_parser
+
   def initialize
     @real_repository_parser = Repository.new([]) #yeah, I could use inheritance
   end
@@ -295,9 +297,11 @@ class TestHelperPageCreation
   end
 
   def create_repository_given_network_description_and_configuration(network_description, configuration)
+    @repository_parser.real_repository_parser = Repository.new_with_configuration([], configuration)
     pages = create_network(network_description)
     Page.build_links(pages)
-    repository = Repository.new_with_configuration(pages, configuration)
+    repository = @repository_parser.real_repository_parser
+    repository.pages(true)
     repository
   end
 

@@ -43,7 +43,7 @@ class Repository < ActiveRecord::Base
 
   def most_common_chain_endings_output(res = "")
     chain_ends = {}
-    @old_pages.each do |page|
+    kludge_pages.each do |page|
       chain_end = page.link_chain_end
       unless chain_ends[chain_end]
         chain_ends[chain_end] = 0
@@ -66,17 +66,26 @@ class Repository < ActiveRecord::Base
     self.new(pages, configuration)
   end
 
-  def initialize(pages, configuration = nil)
+  def initialize(old_pages, configuration = nil)
     super({})
-    @old_pages = pages
+    @old_pages = old_pages
     @configuration = configuration
     if @configuration.nil?
       @configuration = RepositoryConfiguration.new({})
     end
   end
 
+  #Used to switch from using @old_pages to self.pages
+  def kludge_pages
+    unless @old_pages.empty?
+      @old_pages
+    else
+      self.pages
+    end
+  end
+
   def page_count
-    @old_pages.size
+    kludge_pages.size
   end
 
   def page_count_output(res = "")
@@ -96,10 +105,10 @@ class Repository < ActiveRecord::Base
   end
 
   def do_reporting(sorting_method, minimum_threshold, string_method, result)
-    pages = @old_pages
-    pages = pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
-    pages = pages.sort_by {|page| page.send(sorting_method)}
-    pages.each do |page|
+    local_pages = kludge_pages
+    local_pages = local_pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
+    local_pages = local_pages.sort_by {|page| page.send(sorting_method)}
+    local_pages.each do |page|
       addition = page.send(string_method)
       result << addition << "\n" unless addition.empty?
       page.clear_link_chain_cache #Clean up for memory purposes - may not be applicable for all string_methods though

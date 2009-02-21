@@ -42,8 +42,7 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_can_count_pages
-    pages = @test_helper_page_creation_object.create_network([[nil,[]]] * 10)
-    repository = Repository.new(pages)
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration([[nil,[]]] * 10,{})
     assert_equal 10, repository.page_count
   end
 
@@ -153,7 +152,7 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def assert_page_link_chains_sorted_alphabetically(pages)
-    repository = Repository.new(pages)
+    repository = Repository.new(pages) #This will have to go
     res = repository.analysis_output
     previous_title = nil
     line_count = 0

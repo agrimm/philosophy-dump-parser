@@ -312,9 +312,7 @@ class TestHelperPageCreation
   def create_repository_given_network_description_and_configuration(network_description, configuration)
     @repository_parser.real_repository_parser = Repository.new_with_configuration([], configuration)
     pages = create_network(network_description)
-    Page.build_links(pages)
     repository = @repository_parser.real_repository_parser
-    repository.build_total_backlink_counts
     repository.pages(true)
     repository
   end

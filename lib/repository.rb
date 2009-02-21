@@ -77,6 +77,7 @@ class Repository < ActiveRecord::Base
   end
 
   def build_total_backlink_counts
+    raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
     pages.each {|page| page.total_backlink_count = 0; page.save!}
     pages.each {|page| page.reload}
     pages.each do |page|

@@ -26,14 +26,12 @@ class TestRepository < Test::Unit::TestCase
 
   #Check that this method actually tests anything successfully
   def test_most_common_chain_endings_also_sorted_alphabetically
-    network = [["Popular page", []]]
-    network += [[nil, ["Popular page"]]] * 10
-    pages = @test_helper_page_creation_object.create_network(network)
-    popular_page = pages[0]
-    pages.reverse
-    pages[2], pages[7] = pages[7], pages[2]
-    Page.build_links(pages)
-    assert_most_common_chain_endings_also_sorted_alphabetically(pages)
+    network = [["Equally popular page 2", ["Equally popular page 2"]]]
+    network += [["Equally popular page 1", ["Equally popular page 1"]]]
+    network += [[nil, ["Equally popular page 2"]]] * 11
+    network += [[nil, ["Equally popular page 1"]]] * 11
+    repository = @test_helper_page_creation_object.create_repository_given_network_description(network)
+    assert_most_common_chain_endings_also_sorted_alphabetically(repository)
   end
 
   def test_can_count_pages
@@ -54,7 +52,6 @@ class TestRepository < Test::Unit::TestCase
     network += [[nil, ["Philosophy page"]]] * 10
     pages = @test_helper_page_creation_object.create_network(network)
     philosophy_page, looping_page, *general_pages = pages
-    Page.build_links(pages)
     philosophy_expected_backlink_count = pages.size - 2 #Looping page doesn't contribute to the count. This is probably bad.
     looping_page_expected_backlink_count = 0 #Neither from philosophy or from looping page
     general_pages_expected_backlink_count = 0
@@ -68,7 +65,6 @@ class TestRepository < Test::Unit::TestCase
     network += [[nil, ["Popular page"]]] * 10
     pages = @test_helper_page_creation_object.create_network(network)
     philosophy_page, looping_page, popular_page, *general_pages = pages
-    Page.build_links(pages)
     expected_popular_page_string = "#{popular_page.title}, which links to Philosophy page, has 10 backlinks"
     actual_popular_page_string = popular_page.total_backlink_count_string
     assert_equal expected_popular_page_string, actual_popular_page_string
@@ -167,8 +163,7 @@ class TestRepository < Test::Unit::TestCase
     end
   end
 
-  def assert_most_common_chain_endings_also_sorted_alphabetically(pages)
-    repository = Repository.new(pages)
+  def assert_most_common_chain_endings_also_sorted_alphabetically(repository)
     res = repository.most_common_chain_endings_output
     previous_value = nil
     previous_title = nil

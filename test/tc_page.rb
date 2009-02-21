@@ -19,7 +19,6 @@ class TestPage < Test::Unit::TestCase
     network = [ [nil, [lowercase_title]], [uppercase_title, []] ]
     original_page, linked_to_page = test_helper_page_creation_object.create_network(network)
 
-    Page.build_links([original_page, linked_to_page])
     assert_direct_link_to original_page, linked_to_page
   end
 
@@ -52,7 +51,6 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], [nil, ["Philosophy page"]] ]
     philosophy_page, looping_page, general_page = test_helper_page_creation_object.create_network(network)
-    Page.build_links([philosophy_page, looping_page, general_page]) #Keep on forgetting this step!
     assert_link_chain_without_loop_matches general_page, [general_page, philosophy_page]
     assert_link_chain_without_loop_matches philosophy_page, [philosophy_page]
     assert_link_chain_without_loop_matches looping_page, [looping_page] #This feels wrong
@@ -69,7 +67,6 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Target page", [] ], [nil, ["Target page"]] ]
     target_page, linking_page = test_helper_page_creation_object.create_network(network)
-    Page.build_links([target_page, linking_page])
     expected_backlinks_for_target_page = [linking_page]
     expected_backlinks_for_linking_page = []
     assert_equal expected_backlinks_for_target_page, target_page.backlinks
@@ -83,7 +80,6 @@ class TestPage < Test::Unit::TestCase
     network = [ [nil, [] ] ]
     page, = test_helper_page_creation_object.create_network(network)
 
-    Page.build_links([page])
     assert_direct_link_to(page, nil)
     assert_link_chain_without_loop_matches(page, [page])
   end
@@ -92,7 +88,6 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Merging page", []], [nil, ["merging page"]], [nil, ["merging page"]] ]
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     merging_page = pages.first
     normal_page = pages[1]
     assert_equal 1, merging_page.backlink_merge_count, "Can't produce the right answer for a page merging direct backlinks"
@@ -105,7 +100,6 @@ class TestPage < Test::Unit::TestCase
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     philosophy_page = pages.first
     popular_page_1 = pages[1]
     popular_page_2 = pages[2]
@@ -122,7 +116,6 @@ class TestPage < Test::Unit::TestCase
     network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     philosophy_page = pages.first
     assert_equal 0, philosophy_page.backlink_merge_count, "Can't produce the right answer for a page that merely continues a chain without merging anything"
   end
@@ -133,7 +126,6 @@ class TestPage < Test::Unit::TestCase
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     philosophy_page = pages.first
     philosophy_page_expected_string = "Philosophy page has merged 6 backlinks"
     philosophy_page_actual_string = philosophy_page.backlink_merge_count_string
@@ -160,7 +152,6 @@ class TestPage < Test::Unit::TestCase
     network = [[legitimately_nil_title, ["Aardvark"]] ]
     legitimate_hash = {"Aardvark" => 1}
     pages = test_helper_page_creation_object.create_network_allowing_nil_titles(network, legitimate_hash)
-    Page.build_links(pages)
     assert_direct_link_to pages[0], nil, "Ignoring self links isn't working as it should"
   end
 
@@ -211,7 +202,6 @@ class TestPage < Test::Unit::TestCase
     pages = nil
     assert_nothing_raised do
       pages = test_helper_page_creation_object.create_network(network)
-      Page.build_links(pages)
     end
   end
 
@@ -220,7 +210,6 @@ class TestPage < Test::Unit::TestCase
     network = [ ["Acropolis of Athens", ["Acropolis of Athens"]]]
     assert_nothing_raised do
       pages = test_helper_page_creation_object.create_network(network)
-      Page.build_links(pages)
     end
   end
 
@@ -228,7 +217,6 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [[nil, ["the Moon"]], ["The Moon", []]]
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     assert_direct_link_to pages.first, pages[1]
   end
 
@@ -243,7 +231,6 @@ class TestPage < Test::Unit::TestCase
     network = [[nil,[""]]]
     assert_nothing_raised do
       pages = test_helper_page_creation_object.create_network(network)
-      Page.build_links(pages)
     end
   end
 
@@ -251,7 +238,6 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Page One", ["page One", "page Two"]], ["Page Two", []]]
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     assert_not_nil pages[0].direct_link, "shortern_link_list_if_possible shortened the list to an invalid link"
     assert_direct_link_to pages[0], pages[1]
   end
@@ -260,7 +246,6 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [["Event horizon", ["Event Horizon"]], ["Event Horizon", []]]
     pages = test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
     assert_direct_link_to pages[0], pages[1], "Link to similar title does not work."
   end
 

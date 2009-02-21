@@ -12,10 +12,9 @@ class TestRepository < Test::Unit::TestCase
   end
 
   def test_all_page_link_chains_sorted_alphabetically
-    pages = @test_helper_page_creation_object.create_network([[nil,[]]] * 10)
-    pages[2], pages[7] = pages[7], pages[2]
-    Page.build_links(pages)
-    assert_page_link_chains_sorted_alphabetically(pages)
+    network = ["A", "B", "H", "D", "E", "F", "G", "C", "I", "J"].map{|title| [title, []]}
+    repository = @test_helper_page_creation_object.create_repository_given_network_description(network)
+    assert_page_link_chains_sorted_alphabetically(repository)
   end
 
   #Check that this method actually tests anything successfully
@@ -48,10 +47,8 @@ class TestRepository < Test::Unit::TestCase
 
   def test_can_list_most_linked_to_pages
     network = [["Target page", []], [nil, ["Target page"]]]
-    pages = @test_helper_page_creation_object.create_network(network)
-    target_page = pages[0]
-    Page.build_links(pages)
-    repository = Repository.new(pages)
+    repository = @test_helper_page_creation_object.create_repository_given_network_description(network)
+    target_page = repository.pages.first
     expected_string = "1 pages link to #{target_page.title_string}\n"
     assert_equal expected_string, repository.most_backlinks_output
   end
@@ -85,12 +82,11 @@ class TestRepository < Test::Unit::TestCase
     network = [ ["Philosophy page", []], ["Popular page 1", ["philosophy page"]], ["Popular page 2", ["philosophy page"]] ]
     network += [[nil, ["popular page 1"]]] * 5
     network += [[nil, ["popular page 2"]]] * 10
-    pages = @test_helper_page_creation_object.create_network(network)
-    Page.build_links(pages)
+    repository = @test_helper_page_creation_object.create_repository_given_network_description(network)
+    pages = repository.pages
     philosophy_page = pages.first
     popular_page_1 = pages[1]
     popular_page_2 = pages[2]
-    repository = Repository.new(pages)
 
     expected_report = ""
     expected_report << popular_page_1.backlink_merge_count_string << "\n"
@@ -151,8 +147,7 @@ class TestRepository < Test::Unit::TestCase
     assert_analysis_output_equals repository, expected_output, "most_backlinks_merged doesn't have a configurable minimum threshold"
   end
 
-  def assert_page_link_chains_sorted_alphabetically(pages)
-    repository = Repository.new(pages) #This will have to go
+  def assert_page_link_chains_sorted_alphabetically(repository)
     res = repository.analysis_output
     previous_title = nil
     line_count = 0
@@ -163,7 +158,7 @@ class TestRepository < Test::Unit::TestCase
       assert (previous_title.nil? or (previous_title < current_title)), "#{previous_title} was listed before #{current_title}"
       previous_title = current_title
     end
-    assert_equal pages.size, line_count
+    assert_equal repository.page_count, line_count
   end
 
   def assert_most_common_chain_endings_sorted_by_value(pages)

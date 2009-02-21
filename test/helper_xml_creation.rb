@@ -305,6 +305,10 @@ class TestHelperPageCreation
     repository_pages
   end
 
+  def create_repository_given_network_description(network_description)
+    create_repository_given_network_description_and_configuration(network_description, {})
+  end
+
   def create_repository_given_network_description_and_configuration(network_description, configuration)
     @repository_parser.real_repository_parser = Repository.new_with_configuration([], configuration)
     pages = create_network(network_description)

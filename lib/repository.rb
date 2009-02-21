@@ -43,7 +43,7 @@ class Repository < ActiveRecord::Base
 
   def most_common_chain_endings_output(res = "")
     chain_ends = {}
-    kludge_pages.each do |page|
+    pages.each do |page|
       chain_end = page.link_chain_end
       unless chain_ends[chain_end]
         chain_ends[chain_end] = 0
@@ -68,26 +68,16 @@ class Repository < ActiveRecord::Base
 
   def initialize(old_pages, configuration = nil)
     super({})
-    @old_pages = old_pages
     @configuration = configuration
     if @configuration.nil?
       @configuration = RepositoryConfiguration.new({})
     end
   end
 
-  #Used to switch from using @old_pages to self.pages
-  def kludge_pages
-    unless (@old_pages.nil? or @old_pages.empty?)
-      @old_pages
-    else
-      self.pages
-    end
-  end
-
   def build_total_backlink_counts
-    kludge_pages.each {|page| page.total_backlink_count = 0; page.save!}
-    kludge_pages.each {|page| page.reload}
-    kludge_pages.each do |page| #Unwieldy, but it ought to be a repository method anyway
+    pages.each {|page| page.total_backlink_count = 0; page.save!}
+    pages.each {|page| page.reload}
+    pages.each do |page|
       linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
       linked_to_pages.each do |linked_to_page|
         linked_to_page.increment_total_backlink_count
@@ -98,7 +88,7 @@ class Repository < ActiveRecord::Base
   end
 
   def page_count
-    kludge_pages.size
+    pages.size
   end
 
   def page_count_output(res = "")
@@ -118,8 +108,8 @@ class Repository < ActiveRecord::Base
   end
 
   def do_reporting(sorting_method, minimum_threshold, string_method, result)
-    local_pages = kludge_pages
-    local_pages = local_pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
+    local_pages = pages
+    local_pages = pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
     local_pages = local_pages.sort_by {|page| page.send(sorting_method)}
     local_pages.each do |page|
       addition = page.send(string_method)

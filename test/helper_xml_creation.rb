@@ -222,8 +222,8 @@ class MockRepositoryParser
     @page_id
   end
 
-  def new_page_if_valid(title, text, article_hash)
-    return @real_repository_parser.new_page_if_valid(title, page_id, text, article_hash)
+  def new_page_if_valid(title, text)
+    return @real_repository_parser.new_page_if_valid(title, page_id, text)
   end
 end
 
@@ -250,9 +250,9 @@ class TestHelperPageCreation
   end
 
   def create_page(options = {})
-    defaults = {:title => random_title, :text=> random_text, :article_list => nil}
+    defaults = {:title => random_title, :text=> random_text}
     options = defaults.merge(options)
-    return @repository_parser.new_page_if_valid(options[:title], options[:text], options[:article_list])
+    return @repository_parser.new_page_if_valid(options[:title], options[:text])
   end
 
   def random_title
@@ -261,12 +261,6 @@ class TestHelperPageCreation
 
   def random_text
     @test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
-  end
-
-  def create_page_linking_to_pages(page_titles, article_list = nil)
-    warn "Wrong type" if page_titles.respond_to?(:to_str)
-    text = page_titles.map{|page_title| "[[#{page_title}]]"}.join(" and ") + "."
-    create_page({:text => text, :article_list => article_list})
   end
 
   def create_title_hash_given_titles_only(titles_and_links)

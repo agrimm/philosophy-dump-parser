@@ -137,15 +137,6 @@ class TestPage < Test::Unit::TestCase
     assert_equal mergeless_page_expected_string, mergeless_page_actual_string, "Mergeless page doesn't have an empty string"
   end
 
-  def dont_test_use_title_hash
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [[nil, ["Aardvark"]], ["Zebra", []]]
-    bogus_hash = {"Aardvark" => 2}
-    pages= test_helper_page_creation_object.create_network(network, bogus_hash)
-    Page.build_links(pages)
-    assert_direct_link_to pages[0], pages[1], "The title hash isn't being used to its full extent"
-  end
-
   def test_ignore_link_to_self_even_if_using_nil_titles
     test_helper_page_creation_object = TestHelperPageCreation.new
     legitimately_nil_title = nil
@@ -153,47 +144,6 @@ class TestPage < Test::Unit::TestCase
     legitimate_hash = {"Aardvark" => 1}
     pages = test_helper_page_creation_object.create_network_allowing_nil_titles(network, legitimate_hash)
     assert_direct_link_to pages[0], nil, "Ignoring self links isn't working as it should"
-  end
-
-  def dont_test_complain_if_link_thought_to_exist_doesnt_exist
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    page = test_helper_page_creation_object.create_page_linking_to_pages(["Nonexistent page"], {"Nonexistent page" => true})
-    assert_raise(RuntimeError) {Page.build_links([page])}
-  end
-
-  def dont_test_complain_if_lowercase_first_letter_link_thought_to_exist_but_doesnt_exist
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    page = test_helper_page_creation_object.create_page_linking_to_pages(["nonexistent Page"], {"Nonexistent Page" => true})
-    assert_raise(RuntimeError) {Page.build_links([page])}
-  end
-
-  def test_dont_complain_about_nonexistant_page_not_linked_to
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    page = test_helper_page_creation_object.create_page_linking_to_pages(["Nonexistent Page"], {"Nonexistent page" => true})
-    assert_nothing_raised {Page.build_links([page])}
-  end
-
-  def dont_test_complain_when_an_article_similar_to_your_own_page_does_not_exist
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [["Event horizon", ["Event Horizon"]]]
-    bogus_hash = {"Event Horizon" => true}
-    pages= test_helper_page_creation_object.create_network(network, bogus_hash)
-    assert_raise(RuntimeError) {Page.build_links(pages)}
-  end
-
-  def dont_test_trim_down_page
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    network = [[nil, ["Supercalifragilisticexpialidotious floccinaucinihilipilification"]], ["Supercalifragilisticexpialidotious floccinaucinihilipilification",[]]]
-    pages= test_helper_page_creation_object.create_network(network)
-    assert_object_smaller_than pages[0], 240
-  end
-
-  def test_link_shortening
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    page = test_helper_page_creation_object.create_page_linking_to_pages([], {"Real page not linked to by this one"=>true})
-    assert_nothing_raised do
-      Page.build_links([page])
-    end
   end
 
   def test_dont_throw_an_exception_with_capitalization_issues
@@ -261,11 +211,6 @@ class TestPage < Test::Unit::TestCase
   def assert_link_chain_without_loop_matches(originating_page, expected_chain)
     actual_chain = originating_page.link_chain_without_loop
     assert_equal expected_chain, actual_chain
-  end
-
-  def assert_object_smaller_than(object, excessive_size)
-    dump = Marshal.dump(object)
-    assert dump.size < excessive_size, "Object #{dump.inspect} should be smaller than #{excessive_size} but the dump file has a size of #{dump.size}"
   end
 
   def assert_page_title_string_equal(page, expected_title_string, message=nil)

@@ -42,17 +42,7 @@ class Page < ActiveRecord::Base
   end
 
   def self.build_total_backlink_counts(page_array)
-    page_array.first.repository.pages.each {|page| page.total_backlink_count = 0; page.save!}
-    page_array.each {|page| page.reload}
-    page_array.first.repository.pages.each do |page| #Unwieldy, but it ought to be a repository method anyway
-      linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
-      linked_to_pages.each do |linked_to_page|
-        linked_to_page.increment_total_backlink_count
-        linked_to_page.save!
-      end
-      page.clear_link_chain_cache
-    end
-    page_array.each {|page| page.reload}
+    page_array.first.repository.build_total_backlink_counts
   end
 
   #Title string - this is for display purposes, not for searching

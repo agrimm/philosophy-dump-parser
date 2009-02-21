@@ -77,10 +77,23 @@ class Repository < ActiveRecord::Base
 
   #Used to switch from using @old_pages to self.pages
   def kludge_pages
-    unless @old_pages.empty?
+    unless (@old_pages.nil? or @old_pages.empty?)
       @old_pages
     else
       self.pages
+    end
+  end
+
+  def build_total_backlink_counts
+    kludge_pages.each {|page| page.total_backlink_count = 0; page.save!}
+    kludge_pages.each {|page| page.reload}
+    kludge_pages.each do |page| #Unwieldy, but it ought to be a repository method anyway
+      linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
+      linked_to_pages.each do |linked_to_page|
+        linked_to_page.increment_total_backlink_count
+        linked_to_page.save!
+      end
+      page.clear_link_chain_cache
     end
   end
 

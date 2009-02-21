@@ -233,6 +233,14 @@ class TestHelperPageCreation
     @repository_parser = MockRepositoryParser.new
   end
 
+  def build_total_backlink_counts
+    @repository_parser.real_repository_parser.build_total_backlink_counts
+  end
+
+  def repository_pages
+    @repository_parser.real_repository_parser.pages(true)
+  end
+
   def create_title_hash(pages)
     result = {}
     pages.each do |page|
@@ -293,7 +301,8 @@ class TestHelperPageCreation
       page = pages[i]
       page.add_text(links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
     end
-    pages
+    build_total_backlink_counts
+    repository_pages
   end
 
   def create_repository_given_network_description_and_configuration(network_description, configuration)
@@ -301,6 +310,7 @@ class TestHelperPageCreation
     pages = create_network(network_description)
     Page.build_links(pages)
     repository = @repository_parser.real_repository_parser
+    repository.build_total_backlink_counts
     repository.pages(true)
     repository
   end

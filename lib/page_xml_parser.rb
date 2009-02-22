@@ -88,8 +88,8 @@ class PageXmlParser
   end
 
   def build_links
+    @repository_parser.build_total_backlink_counts
     pages = @repository_parser.pages
-    Page.build_links(pages)
     pages
   end
 

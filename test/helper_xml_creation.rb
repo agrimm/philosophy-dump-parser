@@ -241,14 +241,6 @@ class TestHelperPageCreation
     @repository_parser.real_repository_parser.pages(true)
   end
 
-  def create_title_hash(pages)
-    result = {}
-    pages.each do |page|
-      result[page.title] = page.page_id
-    end
-    result
-  end
-
   def create_page(options = {})
     defaults = {:title => random_title, :text=> random_text}
     options = defaults.merge(options)
@@ -263,31 +255,14 @@ class TestHelperPageCreation
     @test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
   end
 
-  def create_title_hash_given_titles_only(titles_and_links)
-    title_hash = {}
-    i = 1
-    titles_and_links.each do |title, links|
-      title_hash[title] = i
-      i += 1
-    end
-    title_hash
-  end
-
   #Create several pages with the specified links
-  def create_network(titles_and_links, title_hash = nil)
-    new_titles_and_links = titles_and_links.map do |title, links|
+  def create_network(titles_and_links)
+    titles_and_links = titles_and_links.map do |title, links|
       title = random_title if title.nil?
       [title, links]
     end
-    create_network_allowing_nil_titles(titles_and_links, title_hash)
-  end
-
-  def create_network_allowing_nil_titles(titles_and_links, title_hash = nil)
-    if title_hash.nil?
-      title_hash = create_title_hash_given_titles_only(titles_and_links)
-    end
     pages = titles_and_links.map do |title, links|
-      page = create_page({:title => title, :text => "", :article_list => title_hash})
+      page = create_page({:title => title, :text => ""})
       page
     end
     titles_and_links.each_index do |i|
@@ -309,6 +284,17 @@ class TestHelperPageCreation
     repository = @repository_parser.real_repository_parser
     repository.pages(true)
     repository
+  end
+
+  def create_repository_given_titles_and_text(page_details)
+    pages = page_details.map do |page_detail|
+      create_page({:title=>page_detail[:title]})
+    end
+    pages.each_with_index do |page, i|
+      page.add_text(page_details[i][:text]) unless page_details[i][:text].nil?
+      page.save!
+    end
+    @repository_parser.real_repository_parser
   end
 
 end

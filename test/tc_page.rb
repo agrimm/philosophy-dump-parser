@@ -37,12 +37,13 @@ class TestPage < Test::Unit::TestCase
 
   def test_ignore_hatnotes
     test_helper_page_creation_object = TestHelperPageCreation.new
-    non_target_page = test_helper_page_creation_object.create_page({:article_list=>{}})
-    target_page = test_helper_page_creation_object.create_page({:article_list=>{}})
-    title_hash = test_helper_page_creation_object.create_title_hash([non_target_page, target_page])
-    original_page = test_helper_page_creation_object.create_page({:text => ":For the pokemon character, see [[#{non_target_page.title}]]\n\n[[#{target_page.title}]]", :article_list => title_hash})
-    Page.build_links([original_page, non_target_page, target_page])
-    assert_direct_link_to original_page, target_page
+
+    original_page_details = ({:text => ":For the pokemon character, see [[Non target page]]\n\n[[Target page]]"})
+    details = [original_page_details, {:title=>"Non target page"}, {:title => "Target page"}]
+    repository = test_helper_page_creation_object.create_repository_given_titles_and_text(details)
+    original_page, target_page = repository.pages[0], repository.pages[2]
+
+    assert_direct_link_to(original_page, target_page)
   end
 
 #Some testing exists in tc_page_xml_parsing.rb
@@ -135,15 +136,6 @@ class TestPage < Test::Unit::TestCase
     mergeless_page_expected_string = ""
     mergeless_page_actual_string = mergeless_page.backlink_merge_count_string
     assert_equal mergeless_page_expected_string, mergeless_page_actual_string, "Mergeless page doesn't have an empty string"
-  end
-
-  def test_ignore_link_to_self_even_if_using_nil_titles
-    test_helper_page_creation_object = TestHelperPageCreation.new
-    legitimately_nil_title = nil
-    network = [[legitimately_nil_title, ["Aardvark"]] ]
-    legitimate_hash = {"Aardvark" => 1}
-    pages = test_helper_page_creation_object.create_network_allowing_nil_titles(network, legitimate_hash)
-    assert_direct_link_to pages[0], nil, "Ignoring self links isn't working as it should"
   end
 
   def test_dont_throw_an_exception_with_capitalization_issues

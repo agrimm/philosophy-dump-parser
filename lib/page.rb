@@ -37,14 +37,6 @@ class Page < ActiveRecord::Base
     return string[0..0].upcase + string[1..-1]
   end
 
-  def self.build_links(page_array)
-    self.build_total_backlink_counts(page_array)
-  end
-
-  def self.build_total_backlink_counts(page_array)
-    page_array.first.repository.build_total_backlink_counts
-  end
-
   #Title string - this is for display purposes, not for searching
   def title_string
     self.title || "Page number #{page_id}"

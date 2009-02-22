@@ -209,11 +209,11 @@ IP-talan þín er $3. Vinsamlegast taktu það fram í fyrirspurnum þínum.</te
   end
 end
 
-class MockRepositoryParser
-  attr_accessor :real_repository_parser
+class MockRepository
+  attr_accessor :real_repository
 
   def initialize
-    @real_repository_parser = Repository.new() #yeah, I could use inheritance
+    @real_repository = Repository.new() #yeah, I could use inheritance
   end
 
   def page_id
@@ -223,28 +223,28 @@ class MockRepositoryParser
   end
 
   def new_page_if_valid(title, text)
-    return @real_repository_parser.new_page_if_valid(title, page_id, text)
+    return @real_repository.new_page_if_valid(title, page_id, text)
   end
 end
 
 class TestHelperPageCreation
   def initialize
     @test_helper_xml_creation_object = TestHelperXmlCreation.new
-    @repository_parser = MockRepositoryParser.new
+    @repository = MockRepository.new
   end
 
   def build_total_backlink_counts
-    @repository_parser.real_repository_parser.build_total_backlink_counts
+    @repository.real_repository.build_total_backlink_counts
   end
 
   def repository_pages
-    @repository_parser.real_repository_parser.pages(true)
+    @repository.real_repository.pages(true)
   end
 
   def create_page(options = {})
     defaults = {:title => random_title, :text=> random_text}
     options = defaults.merge(options)
-    return @repository_parser.new_page_if_valid(options[:title], options[:text])
+    return @repository.new_page_if_valid(options[:title], options[:text])
   end
 
   def random_title
@@ -279,9 +279,9 @@ class TestHelperPageCreation
   end
 
   def create_repository_given_network_description_and_configuration(network_description, configuration)
-    @repository_parser.real_repository_parser = Repository.new_with_configuration(configuration)
+    @repository.real_repository = Repository.new_with_configuration(configuration)
     pages = create_network(network_description)
-    repository = @repository_parser.real_repository_parser
+    repository = @repository.real_repository
     repository.pages(true)
     repository
   end
@@ -294,7 +294,7 @@ class TestHelperPageCreation
       page.add_text(page_details[i][:text]) unless page_details[i][:text].nil?
       page.save!
     end
-    @repository_parser.real_repository_parser
+    @repository.real_repository
   end
 
 end

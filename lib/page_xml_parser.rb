@@ -53,14 +53,14 @@ class PageXmlParser
   def initialize(page_xml_file, options, tasklist_filename = nil)
     @page_xml_file = page_xml_file
     @tasks = TaskList.new(tasklist_filename)
-    @repository_parser = Repository.new()
+    @repository = Repository.new()
   end
 
   def parse_next_page(xml_handler)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
       title, page_id, text = parse_result[:title], parse_result[:page_id], parse_result[:text]
-      result = @repository_parser.new_page_if_valid(title, page_id, text)
+      result = @repository.new_page_if_valid(title, page_id, text)
       break unless result.nil?
     end
     result
@@ -69,7 +69,7 @@ class PageXmlParser
   def parse_next_valid_page_details(xml_handler)
     result = nil
     while (parse_result = xml_handler.parse_next_page_details)
-      result = parse_result if @repository_parser.page_title_valid?(parse_result[:title])
+      result = parse_result if @repository.page_title_valid?(parse_result[:title])
       break unless result.nil?
     end
     result
@@ -88,8 +88,8 @@ class PageXmlParser
   end
 
   def build_links
-    @repository_parser.build_total_backlink_counts
-    pages = @repository_parser.pages
+    @repository.build_total_backlink_counts
+    pages = @repository.pages
     pages
   end
 

@@ -213,7 +213,7 @@ class MockRepositoryParser
   attr_accessor :real_repository_parser
 
   def initialize
-    @real_repository_parser = Repository.new([]) #yeah, I could use inheritance
+    @real_repository_parser = Repository.new() #yeah, I could use inheritance
   end
 
   def page_id
@@ -279,7 +279,7 @@ class TestHelperPageCreation
   end
 
   def create_repository_given_network_description_and_configuration(network_description, configuration)
-    @repository_parser.real_repository_parser = Repository.new_with_configuration([], configuration)
+    @repository_parser.real_repository_parser = Repository.new_with_configuration(configuration)
     pages = create_network(network_description)
     repository = @repository_parser.real_repository_parser
     repository.pages(true)

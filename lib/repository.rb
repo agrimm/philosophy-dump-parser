@@ -62,12 +62,12 @@ class Repository < ActiveRecord::Base
     res
   end
 
-  def self.new_with_configuration(pages, options)
+  def self.new_with_configuration(options)
     configuration = RepositoryConfiguration.new(options)
-    self.new(pages, configuration)
+    self.new(configuration)
   end
 
-  def initialize(old_pages, configuration = nil)
+  def initialize(configuration = nil)
     super({})
     @configuration = configuration
     if @configuration.nil?

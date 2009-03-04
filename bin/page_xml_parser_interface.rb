@@ -34,10 +34,8 @@ class ProcessXmlFile
     puts "#{filename}\n\n"
     File.open(filename) do |xml_file|
       configuration = load_configuration
-      page_xml_parser = PageXmlParser.new(xml_file, configuration, "tasks.yml")
-      mainspace_pages = page_xml_parser.mainspace_pages
-      next unless page_xml_parser.finished?
-      repository = Repository.new_with_configuration(mainspace_pages, configuration)
+      page_xml_parser = PageXmlParser.new(xml_file, configuration)
+      repository = page_xml_parser.repository
       repository.analysis_output(STDOUT)
       puts
     end
@@ -46,8 +44,7 @@ class ProcessXmlFile
 end
 
 if $0 == __FILE__
-  STDERR.puts "Program being rebuilt - probably does not work right now."
-  exit
+  warn "Program being rebuilt - may not work right now for large wikis."
   unless ARGV.size == 1
     require "rdoc/usage"
     RDoc::usage("usage")

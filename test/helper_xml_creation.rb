@@ -110,32 +110,7 @@ class TestHelperXmlCreation
   end
 
   def mainspace_page_revision_text_text
-    "'''Íslensk skáld og rithöfundar'''&lt;br&gt;
-Íslensk skáld eru æðimörg. Þeirra á meðal eru þessi:
-
-(Flokkun skálda á aldir fer hvorki eftir fæðingarári né dánarári, heldur er miðað við hvenær skáldin voru virkust og gáfu mest út)
-
-== 10. öld ==
-
-*[[Egill Skallagrímsson]]
-
-== 11. öld ==
-
-*[[Sighvatur Þórðarson]]
-
-== 12. öld ==
-
-*[[Einar Skúlason]]
-
-== 13. öld ==
-
-* [[Snorri Sturluson]]
-
-== 16. öld ==
-* [[Staðarhóls-Páll]] (Páll Jónsson) ''(d. 1598)''
-* [[Einar Sigurðsson í Eydölum]] ''(1539-1626)''
-
-etc. etc."
+    "[[Egill Skallagrímsson]] [[Sighvatur Þórðarson]] [[Einar Skúlason]] [[Snorri Sturluson]] [[Staðarhóls-Páll]] [[Einar Sigurðsson í Eydölum]]"
   end
 
   def expected_mainspace_page_revision_text_text

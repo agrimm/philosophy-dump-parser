@@ -89,8 +89,6 @@ class PageXmlParser
 
   def build_links
     @repository.build_total_backlink_counts
-    pages = @repository.pages
-    pages
   end
 
   def build_title_list
@@ -98,13 +96,24 @@ class PageXmlParser
     parse_pages_for_titles(xml_handler)
   end
 
-  def mainspace_pages
+  def do_analysis
     build_title_list if @tasks.include_task?(:build_title_list)
     add_text_to_pages if @tasks.include_task?(:create_dumps) #Task list may become obsolete soon, so don't change the internals
-    pages = build_links if @tasks.include_task?(:build_links)
+    build_links if @tasks.include_task?(:build_links)
     @tasks.write_next_tasks
     STDERR.puts(@tasks.status_report_string) unless @tasks.last_possible_task_completed?
+  end
+
+  def mainspace_pages
+    do_analysis
+    pages = @repository.pages
     pages
+    #nil
+  end
+
+  def repository
+    do_analysis #To do: make sure that calling repository multiple times doesn't re-run it
+    @repository
   end
 
   def finished?

@@ -104,13 +104,6 @@ class PageXmlParser
     STDERR.puts(@tasks.status_report_string) unless @tasks.last_possible_task_completed?
   end
 
-  def mainspace_pages
-    do_analysis
-    pages = @repository.pages
-    pages
-    #nil
-  end
-
   def repository
     do_analysis #To do: make sure that calling repository multiple times doesn't re-run it
     @repository

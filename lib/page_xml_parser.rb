@@ -50,9 +50,8 @@ class XmlHandler
 end
 
 class PageXmlParser
-  def initialize(page_xml_file, options, tasklist_filename = nil)
+  def initialize(page_xml_file, options)
     @page_xml_file = page_xml_file
-    @tasks = TaskList.new(tasklist_filename)
     @repository = Repository.new()
   end
 
@@ -97,91 +96,14 @@ class PageXmlParser
   end
 
   def do_analysis
-    build_title_list if @tasks.include_task?(:build_title_list)
-    add_text_to_pages if @tasks.include_task?(:create_dumps) #Task list may become obsolete soon, so don't change the internals
-    build_links if @tasks.include_task?(:build_links)
-    @tasks.write_next_tasks
-    STDERR.puts(@tasks.status_report_string) unless @tasks.last_possible_task_completed?
+    build_title_list
+    add_text_to_pages
+    build_links
   end
 
   def repository
     do_analysis #To do: make sure that calling repository multiple times doesn't re-run it
     @repository
   end
-
-  def finished?
-    @tasks.last_possible_task_completed?
-  end
-
-end
-
-class TaskList
-
-  def initialize(filename)
-    @filename = filename
-    @tasks = get_tasks
-  end
-
-  def include_task?(task)
-    @tasks.include?(task)
-  end
-
-  def possible_tasks
-    possible_tasks = [:build_title_list, :create_dumps, :build_links]
-  end
-
-  def get_tasks
-    tasks = []
-    if ( !@filename.nil? and File.exist?(@filename))
-      yml_data = YAML::load(File.read(@filename))
-      raise "Error: no variables" unless yml_data
-      tasks = yml_data[:tasks]
-      raise "Error: no tasks" if tasks.empty?
-      raise "Error: invalid task" unless (tasks - possible_tasks).empty?
-    else
-      tasks = possible_tasks
-    end
-    tasks
-  end
-
-  def write_next_tasks
-    return if @filename.nil?
-
-    begin
-      File.open(@filename,"w") do |f|
-        f.write({:tasks=>next_tasks}.to_yaml)
-      end
-    rescue
-      STDERR << "Something went wrong when saving the next task. It's probably the hard drive's fault."
-      raise
-    end
-  end
-
-  def last_completed_task
-    last_completed_task = @tasks.max {|task1, task2| possible_tasks.index(task1) <=> possible_tasks.index(task2)}
-  end
-
-  def last_possible_task_completed?
-    last_completed_task == possible_tasks.last
-  end
-
-  def next_tasks
-    if last_possible_task_completed?
-      next_task = possible_tasks.first
-    else
-      next_task = possible_tasks[possible_tasks.index(last_completed_task) + 1]
-    end
-    results = [next_task]
-    results
-  end
-
-  def status_report_string
-    if last_possible_task_completed?
-      "All tasks completed"
-    else
-      "#{@tasks.join(",")} completed, next tasks #{next_tasks.join(",")}"
-    end
-  end
-
 end
 

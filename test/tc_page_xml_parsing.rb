@@ -177,7 +177,7 @@ class TestXmlParsing < Test::Unit::TestCase
   end
 
   def create_xml_parser(xml_file)
-    parser = PageXmlParser.new(xml_file, {}, nil)
+    parser = PageXmlParser.new(xml_file, {})
   end
 
 end

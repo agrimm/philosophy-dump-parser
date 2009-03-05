@@ -188,7 +188,7 @@ class MockRepository
   attr_accessor :real_repository
 
   def initialize
-    @real_repository = Repository.new() #yeah, I could use inheritance
+    @real_repository = Repository.new_with_configuration({}) #yeah, I could use inheritance
   end
 
   def page_id

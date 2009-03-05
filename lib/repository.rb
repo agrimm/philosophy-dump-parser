@@ -67,13 +67,9 @@ class Repository < ActiveRecord::Base
     self.new(configuration)
   end
 
-  def initialize(configuration = nil)
+  def initialize(configuration)
     super({})
     @configuration = configuration
-    if @configuration.nil?
-      @configuration = RepositoryConfiguration.new({})
-    end
-    raise "Can't happen" if @configuration.nil?
   end
 
   def build_total_backlink_counts

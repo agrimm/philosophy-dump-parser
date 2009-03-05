@@ -52,7 +52,7 @@ end
 class PageXmlParser
   def initialize(page_xml_file, options)
     @page_xml_file = page_xml_file
-    @repository = Repository.new()
+    @repository = Repository.new_with_configuration(options)
   end
 
   def parse_next_page(xml_handler)

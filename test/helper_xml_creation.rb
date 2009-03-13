@@ -113,35 +113,6 @@ class TestHelperXmlCreation
     "[[Egill Skallagrímsson]] [[Sighvatur Þórðarson]] [[Einar Skúlason]] [[Snorri Sturluson]] [[Staðarhóls-Páll]] [[Einar Sigurðsson í Eydölum]]"
   end
 
-  def expected_mainspace_page_revision_text_text
-    "'''Íslensk skáld og rithöfundar'''<br>
-Íslensk skáld eru æðimörg. Þeirra á meðal eru þessi:
-
-(Flokkun skálda á aldir fer hvorki eftir fæðingarári né dánarári, heldur er miðað við hvenær skáldin voru virkust og gáfu mest út)
-
-== 10. öld ==
-
-*[[Egill Skallagrímsson]]
-
-== 11. öld ==
-
-*[[Sighvatur Þórðarson]]
-
-== 12. öld ==
-
-*[[Einar Skúlason]]
-
-== 13. öld ==
-
-* [[Snorri Sturluson]]
-
-== 16. öld ==
-* [[Staðarhóls-Páll]] (Páll Jónsson) ''(d. 1598)''
-* [[Einar Sigurðsson í Eydölum]] ''(1539-1626)''
-
-etc. etc."
-  end
-
   def mainspace_page_revision_text_text_with_one_specified_link(target)
     "There's only one wikilink, and that's [[#{target}]]. There's a nice [[Image:picture.jpg]], but everything else is [[el:irrelevant]]"
   end
@@ -227,7 +198,7 @@ class TestHelperPageCreation
   end
 
   def random_text
-    @test_helper_xml_creation_object.expected_mainspace_page_revision_text_text
+    "random text"
   end
 
   #Create several pages with the specified links

@@ -7,8 +7,8 @@ require "page_xml_parser"
 
 class TestXmlParsing < Test::Unit::TestCase
   def almost_setup
-    Repository.destroy_all
-    Page.destroy_all
+    #Repository.destroy_all
+    #Page.destroy_all
   end
 
   def test_count_mainspace_pages
@@ -132,6 +132,7 @@ class TestXmlParsing < Test::Unit::TestCase
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([test_helper_xml_creation_object.mainspace_page, test_helper_xml_creation_object.linked_to_mainspace_page])
     page_xml_parser = create_xml_parser(xml_file)
     mainspace_pages = page_xml_parser.repository.pages
+    assert_direct_link_to mainspace_pages[0], mainspace_pages[1], "Test setup problem"
     assert_direct_link_to mainspace_pages[1], nil, "Test setup problem: links between pages isn't what it should be"
     assert_equal "#{mainspace_pages[0].title_string} links to #{mainspace_pages[1].title_string}, which links to nothing.", mainspace_pages[0].link_chain_string
   end

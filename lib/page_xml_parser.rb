@@ -81,7 +81,7 @@ class PageXmlParser
   def add_text_to_pages
     xml_handler = XmlHandler.new(@page_xml_file)
     while details = parse_next_valid_page_details(xml_handler)
-      page = Page.find_by_title(details[:title])
+      page = @repository.pages.find_by_title(details[:title])
       page.add_text(details[:text])
     end
   end

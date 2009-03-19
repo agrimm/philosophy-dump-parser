@@ -15,7 +15,6 @@ class Page < ActiveRecord::Base
     super({:title=>title, :local_id => page_id, :total_backlink_count => nil})
     self.repository = repository
     raise if page_id < 1
-    add_text(text)
   end
 
   #Add text to set a direct link

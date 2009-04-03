@@ -55,14 +55,11 @@ class PageXmlParser
     @repository = Repository.new_with_configuration(options)
   end
 
-  def parse_next_page(xml_handler)
-    result = nil
+  def parse_pages_for_titles(xml_handler)
     while (parse_result = xml_handler.parse_next_page_details)
-      title, page_id, text = parse_result[:title], parse_result[:page_id], parse_result[:text]
-      result = @repository.new_page_if_valid(title, page_id, text)
-      break unless result.nil?
+      title, page_id = parse_result[:title], parse_result[:page_id]
+      result = @repository.new_page_if_valid(title, page_id)
     end
-    result
   end
 
   def parse_next_valid_page_details(xml_handler)
@@ -72,10 +69,6 @@ class PageXmlParser
       break unless result.nil?
     end
     result
-  end
-
-  def parse_pages_for_titles(xml_handler)
-    while page = parse_next_page(xml_handler) do end
   end
 
   def add_text_to_pages

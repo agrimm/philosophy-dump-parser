@@ -2,10 +2,10 @@ class Repository < ActiveRecord::Base
 
   has_many :pages
 
-  def new_page_if_valid(title, page_id, text)
+  def new_page_if_valid(title, page_id)
     if page_parameters_valid?(title)
       title = nil if @nil_titles
-      page = Page.new(title, page_id, text, self)
+      page = Page.new(title, page_id, self)
       page.save
       pages << page
       return page

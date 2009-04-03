@@ -11,7 +11,7 @@ class Page < ActiveRecord::Base
     local_id
   end
 
-  def initialize(title, page_id, text, repository)
+  def initialize(title, page_id, repository)
     super({:title=>title, :local_id => page_id, :total_backlink_count => nil})
     self.repository = repository
     raise if page_id < 1

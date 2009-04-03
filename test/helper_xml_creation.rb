@@ -168,8 +168,8 @@ class MockRepository
     @page_id
   end
 
-  def new_page_if_valid(title, text)
-    return @real_repository.new_page_if_valid(title, page_id, text)
+  def new_page_if_valid(title)
+    return @real_repository.new_page_if_valid(title, page_id)
   end
 end
 
@@ -188,17 +188,13 @@ class TestHelperPageCreation
   end
 
   def create_page(options = {})
-    defaults = {:title => random_title, :text=> random_text}
+    defaults = {:title => random_title}
     options = defaults.merge(options)
-    return @repository.new_page_if_valid(options[:title], options[:text])
+    return @repository.new_page_if_valid(options[:title])
   end
 
   def random_title
     @test_helper_xml_creation_object.generate_random_title_text
-  end
-
-  def random_text
-    "random text"
   end
 
   #Create several pages with the specified links
@@ -208,7 +204,7 @@ class TestHelperPageCreation
       [title, links]
     end
     pages = titles_and_links.map do |title, links|
-      page = create_page({:title => title, :text => ""})
+      page = create_page({:title => title})
       page
     end
     titles_and_links.each_index do |i|

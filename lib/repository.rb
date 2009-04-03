@@ -3,14 +3,11 @@ class Repository < ActiveRecord::Base
   has_many :pages
 
   def new_page_if_valid(title, page_id)
-    if page_parameters_valid?(title)
-      page = Page.new(title, page_id, self)
-      page.save
-      #pages << page
-      return page
-    else
-      return nil
-    end
+    return unless page_parameters_valid?(title)
+    page = Page.new(title, page_id, self)
+    page.save
+    #pages << page
+    return page #To do: remove reliance on this return value in unit tests
   end
 
   def page_parameters_valid?(title)

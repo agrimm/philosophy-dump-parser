@@ -7,7 +7,7 @@ class Repository < ActiveRecord::Base
       title = nil if @nil_titles
       page = Page.new(title, page_id, self)
       page.save
-      pages << page
+      #pages << page
       return page
     else
       return nil

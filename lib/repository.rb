@@ -4,7 +4,6 @@ class Repository < ActiveRecord::Base
 
   def new_page_if_valid(title, page_id)
     if page_parameters_valid?(title)
-      title = nil if @nil_titles
       page = Page.new(title, page_id, self)
       page.save
       #pages << page
@@ -20,7 +19,7 @@ class Repository < ActiveRecord::Base
   end
 
   def page_title_valid?(title)
-    return true if title.nil? #Allow nil titles
+    raise TitleNilError if title.nil?
     return false if title =~ /:/
     raise "Invalid title #{title}" if title != Page.upcase_first_letter(title)
     return true
@@ -150,3 +149,8 @@ class RepositoryConfiguration
     @options[:most_backlinks_merged_output][:minimum_threshold]
   end
 end
+
+
+class TitleNilError < RuntimeError
+end
+

@@ -38,7 +38,7 @@ class Page < ActiveRecord::Base
 
   #Title string - this is for display purposes, not for searching
   def title_string
-    self.title || "Page number #{page_id}"
+    self.title
   end
 
   def immediate_link_string(current_link_chain)

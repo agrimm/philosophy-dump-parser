@@ -22,10 +22,11 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to original_page, linked_to_page
   end
 
-  def test_handle_empty_titles
+  def test_dont_handle_empty_titles
     test_helper_page_creation_object = TestHelperPageCreation.new
-    page = test_helper_page_creation_object.create_page({:title=>nil, :article_list=>{}})
-    assert_page_title_string_equal page, "Page number 1", "Can't handle empty titles"
+    assert_raise(TitleNilError) do
+      page = test_helper_page_creation_object.create_page({:title=>nil, :article_list=>{}})
+    end
   end
 
   def test_page_id_available
@@ -35,10 +36,11 @@ class TestPage < Test::Unit::TestCase
     assert_has_page_id page, 1
   end
 
+  #To do: move this test into tc_wiki_text
   def test_ignore_hatnotes
     test_helper_page_creation_object = TestHelperPageCreation.new
 
-    original_page_details = ({:text => ":For the pokemon character, see [[Non target page]]\n\n[[Target page]]"})
+    original_page_details = ({:title => "Artemis", :text => ":For the manga character, see [[Non target page]]\n\n[[Target page]]"})
     details = [original_page_details, {:title=>"Non target page"}, {:title => "Target page"}]
     repository = test_helper_page_creation_object.create_repository_given_titles_and_text(details)
     original_page, target_page = repository.pages[0], repository.pages[2]

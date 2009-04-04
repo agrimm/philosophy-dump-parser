@@ -2,7 +2,7 @@ $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 $:.unshift File.join(File.dirname(__FILE__), "..", "test")
 
 require "test/unit"
-require "repository"
+#require "repository"
 require "page"
 
 class TestRepositoryHandler < Test::Unit::TestCase

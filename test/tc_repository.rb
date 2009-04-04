@@ -2,7 +2,7 @@ $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 $:.unshift File.join(File.dirname(__FILE__), "..", "test")
 
 require "test/unit"
-require "helper_xml_creation"
+require "helper"
 require "repository"
 
 class TestRepository < Test::Unit::TestCase

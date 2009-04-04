@@ -188,8 +188,7 @@ class TestHelperPageCreation
   end
 
   def create_page(options = {})
-    defaults = {:title => random_title}
-    options = defaults.merge(options)
+    raise "missing or not allowed keys included: #{options.keys.inspect}" unless options.keys == [:title]
     return @repository.new_page_if_valid(options[:title])
   end
 
@@ -203,13 +202,12 @@ class TestHelperPageCreation
       title = random_title if title.nil?
       [title, links]
     end
-    pages = titles_and_links.map do |title, links|
-      page = create_page({:title => title})
-      page
+    titles_and_links.each do |title, links|
+      create_page({:title => title})
     end
     titles_and_links.each_index do |i|
       title, links = titles_and_links[i]
-      page = pages[i]
+      page = @repository.real_repository.find_page_by_title(title)
       page.add_text(links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
     end
     build_total_backlink_counts
@@ -226,17 +224,6 @@ class TestHelperPageCreation
     repository = @repository.real_repository
     repository.pages(true)
     repository
-  end
-
-  def create_repository_given_titles_and_text(page_details)
-    pages = page_details.map do |page_detail|
-      create_page({:title=>page_detail[:title]})
-    end
-    pages.each_with_index do |page, i|
-      page.add_text(page_details[i][:text]) unless page_details[i][:text].nil?
-      page.save!
-    end
-    @repository.real_repository
   end
 
 end

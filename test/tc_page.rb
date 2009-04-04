@@ -25,7 +25,7 @@ class TestPage < Test::Unit::TestCase
   def test_dont_handle_empty_titles
     test_helper_page_creation_object = TestHelperPageCreation.new
     assert_raise(TitleNilError) do
-      page = test_helper_page_creation_object.create_page({:title=>nil, :article_list=>{}})
+      page = test_helper_page_creation_object.create_page({:title=>nil})
     end
   end
 
@@ -34,18 +34,6 @@ class TestPage < Test::Unit::TestCase
     network = [ [nil, []] ]
     page, = test_helper_page_creation_object.create_network(network)
     assert_has_page_id page, 1
-  end
-
-  #To do: move this test into tc_wiki_text
-  def test_ignore_hatnotes
-    test_helper_page_creation_object = TestHelperPageCreation.new
-
-    original_page_details = ({:title => "Artemis", :text => ":For the manga character, see [[Non target page]]\n\n[[Target page]]"})
-    details = [original_page_details, {:title=>"Non target page"}, {:title => "Target page"}]
-    repository = test_helper_page_creation_object.create_repository_given_titles_and_text(details)
-    original_page, target_page = repository.pages[0], repository.pages[2]
-
-    assert_direct_link_to(original_page, target_page)
   end
 
 #Some testing exists in tc_page_xml_parsing.rb

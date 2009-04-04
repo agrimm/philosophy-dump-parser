@@ -24,6 +24,12 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_first_article_is(wiki_text_without_content, nil)
   end
 
+  def test_ignore_hatnotes
+    original_text = ":For the manga character, see [[Non target page]]\n\n[[Target page]]"
+    assert_first_article_is(original_text, "Target page")
+  end
+
+
   def assert_first_article_is(text, expected_article)
     wiki_text = WikiText.new(text)
     articles = wiki_text.linked_articles

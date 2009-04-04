@@ -4,10 +4,8 @@ class Repository < ActiveRecord::Base
 
   def new_page_if_valid(title, page_id)
     return unless page_parameters_valid?(title)
-    page = Page.new(title, page_id, self)
-    page.save
-    #pages << page
-    return page #To do: remove reliance on this return value in unit tests
+    raise if page_id < 1
+    pages.create!(:title=> title, :local_id => page_id)
   end
 
   def page_parameters_valid?(title)
@@ -20,6 +18,10 @@ class Repository < ActiveRecord::Base
     return false if title =~ /:/
     raise "Invalid title #{title}" if title != Page.upcase_first_letter(title)
     return true
+  end
+
+  def find_page_by_title(title)
+    pages.find_by_title(title)
   end
 
   def analysis_output(res = "")
@@ -60,7 +62,9 @@ class Repository < ActiveRecord::Base
 
   def self.new_with_configuration(options)
     configuration = RepositoryConfiguration.new(options)
-    self.new(configuration)
+    result = self.new(configuration)
+    result.save!
+    result
   end
 
   def initialize(configuration)

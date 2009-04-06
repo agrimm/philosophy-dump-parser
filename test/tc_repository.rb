@@ -88,6 +88,13 @@ class TestRepository < Test::Unit::TestCase
     assert_equal expected_report, actual_report
   end
 
+  def test_can_list_longest_chains
+    network = [["Second last page", ["Last page"]], ["Last page", []], ["First page", ["Second last page"]]]
+    repository = @test_helper_page_creation_object.create_repository_given_network_description(network)
+    expected_string = "Second last page has a chain of length 1\nFirst page has a chain of length 2\n"
+    assert_equal expected_string, repository.longest_chains_output
+  end
+
   def test_output_configurability
     network = [ ["A", []] ] + [ [nil, ["A"]] ] * 9
     configuration = {:outputs => [:page_count]}
@@ -138,6 +145,15 @@ class TestRepository < Test::Unit::TestCase
     expected_output = "A has merged 2 backlinks\n"
     assert_analysis_output_equals repository, expected_output, "most_backlinks_merged doesn't have a configurable minimum threshold"
   end
+
+  def test_minimum_threshold_configurable_for_longest_chains
+    network = [["Second last page", ["Last page"]], ["Last page", []], ["First page", ["Second last page"]]]
+    configuration = {:outputs => [:longest_chains], :longest_chains_output => {:minimum_threshold=>2}}
+    repository = @test_helper_page_creation_object.create_repository_given_network_description_and_configuration(network, configuration)
+    expected_output = "First page has a chain of length 2\n"
+    assert_analysis_output_equals repository, expected_output, "longest_chains doesn't have a configurable minimum threshold"
+  end
+
 
   def assert_page_link_chains_sorted_alphabetically(repository)
     res = repository.analysis_output

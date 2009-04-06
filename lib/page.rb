@@ -145,6 +145,15 @@ class Page < ActiveRecord::Base
     return "" if (backlink_merge_count == 0)
     return "#{title_string} has merged #{backlink_merge_count} backlinks"
   end
+
+  def chain_without_loop_length
+    link_chain_without_loop.length - 1
+  end
+
+  def chain_without_loop_length_string
+    return "" if (chain_without_loop_length.zero?)
+    return "#{title_string} has a chain of length #{chain_without_loop_length}"
+  end
 end
 
 class StringAggregator

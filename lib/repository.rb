@@ -30,6 +30,7 @@ class Repository < ActiveRecord::Base
     most_backlinks_output(res) if @configuration.include_output?(:most_backlinks)
     most_total_backlinks_output(res) if @configuration.include_output?(:most_total_backlinks)
     most_backlinks_merged_output(res) if @configuration.include_output?(:most_backlinks_merged)
+    longest_chains_output(res) if @configuration.include_output?(:longest_chains)
     page_count_output(res) if @configuration.include_output?(:page_count)
     res
   end
@@ -106,6 +107,11 @@ class Repository < ActiveRecord::Base
     do_reporting(:backlink_merge_count, @configuration.most_backlinks_merged_minimum_threshold, :backlink_merge_count_string, res)
   end
 
+  def longest_chains_output(res = "")
+    do_reporting(:chain_without_loop_length, @configuration.longest_chains_minimum_threshold, :chain_without_loop_length_string, res)
+  end
+
+  #To do: add the option of a maximum number of results
   def do_reporting(sorting_method, minimum_threshold, string_method, result)
     local_pages = pages
     local_pages = pages.reject {|page| page.send(sorting_method) < minimum_threshold} unless minimum_threshold.nil?
@@ -148,6 +154,11 @@ class RepositoryConfiguration
   def most_backlinks_merged_minimum_threshold
     return nil if @options[:most_backlinks_merged_output].nil?
     @options[:most_backlinks_merged_output][:minimum_threshold]
+  end
+
+  def longest_chains_minimum_threshold
+    return nil if @options[:longest_chains_output].nil?
+    @options[:longest_chains_output][:minimum_threshold]
   end
 end
 

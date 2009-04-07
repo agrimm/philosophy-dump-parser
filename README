@@ -6,7 +6,7 @@ To get such an XML file, go to http://download.wikimedia.org/backup-index.html a
 
 To do:
 
-Speed up analysis, preferably using less memory.
+Speed up analysis, preferably using less memory. Ensure iteration over pages doesn't load all of them at once.
 
 Handle mainspace articles that have colons in their names.
 

@@ -73,11 +73,22 @@ class Repository < ActiveRecord::Base
     @configuration = configuration
   end
 
+  def each_page
+    offset = 0
+    limit = 100
+    while true
+      pages_chunk = pages.find(:all, :order => "id", :limit => limit, :offset => offset)
+      break if pages_chunk.empty?
+      pages_chunk.each {|page| yield page}
+      offset += limit
+    end
+  end
+
   def build_total_backlink_counts
     raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
-    pages.each {|page| page.total_backlink_count = 0; page.save!}
-    pages.each {|page| page.reload}
-    pages.each do |page|
+    each_page {|page| page.total_backlink_count = 0; page.save!}
+    each_page {|page| page.reload}
+    each_page do |page|
       linked_to_pages = page.link_chain_without_loop[1..-1] #Don't count the original page
       linked_to_pages.each do |linked_to_page|
         linked_to_page.increment_total_backlink_count
@@ -85,6 +96,7 @@ class Repository < ActiveRecord::Base
       end
       page.clear_link_chain_cache
     end
+    pages(true)
   end
 
   def page_count

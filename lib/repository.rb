@@ -5,7 +5,7 @@ class Repository < ActiveRecord::Base
   def new_page_if_valid(title, page_id)
     return unless page_parameters_valid?(title)
     raise if page_id < 1
-    pages.create!(:title=> title, :local_id => page_id)
+    ActiveRecord::Base.connection.execute "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id})"
     return #Just to emphasize it doesn't return the page
   end
 
@@ -21,8 +21,18 @@ class Repository < ActiveRecord::Base
     return true
   end
 
-  def find_page_by_unupcased_title(title)
-    pages.find_by_title(upcase_first_letter(title))
+  def find_page_id_by_title(title)
+    result = self.class.connection.select_one("select id from pages where title = '#{sql_fake_escape(title)}' and repository_id = #{self.id}")
+    raise TitleNotFoundError if result.nil?
+    result["id"]
+  end
+
+  def find_page_id_by_unupcased_title(title)
+    begin
+      return find_page_id_by_title(upcase_first_letter(title))
+    rescue TitleNotFoundError
+      return nil
+    end
   end
 
   def upcase_first_letter(string)
@@ -31,19 +41,21 @@ class Repository < ActiveRecord::Base
   end
 
   def add_to_page_by_title_some_text(title, text)
-    page = pages.find_by_title(title)
-    raise if page.nil?
+    page_id = find_page_id_by_title(title)
     wiki_text = WikiText.new(text)
-    page.direct_link = nil
     wiki_text.linked_articles.each do |potential_title|
-      potential_link = find_page_by_unupcased_title(potential_title)
-      if (potential_link and potential_link != page)
-        potential_link.backlinks << page
+      potential_link_id = find_page_id_by_unupcased_title(potential_title)
+      if (potential_link_id and potential_link_id != page_id)
+        ActiveRecord::Base.connection.execute "update pages set direct_link_id = #{potential_link_id} where id = #{page_id}"
         return
       end
     end
-    #page.save! #This and other saves are a temporary measure only
+    ActiveRecord::Base.connection.execute "update pages set direct_link_id = null where id = #{page_id}"
     return
+  end
+
+  def sql_fake_escape(string)
+    string.gsub(/'/, "''") #Not yet unit tested
   end
 
   def analysis_output(res = "")
@@ -198,5 +210,8 @@ end
 
 
 class TitleNilError < RuntimeError
+end
+
+class TitleNotFoundError < RuntimeError
 end
 

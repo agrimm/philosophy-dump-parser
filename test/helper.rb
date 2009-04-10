@@ -52,8 +52,7 @@ class TestHelperPageCreation
     end
     titles_and_links.each_index do |i|
       title, links = titles_and_links[i]
-      page = @repository.real_repository.find_page_by_title(title)
-      page.add_text(links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
+      @repository.real_repository.add_to_page_by_title_some_text(title, links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
     end
     build_total_backlink_counts
     repository_pages

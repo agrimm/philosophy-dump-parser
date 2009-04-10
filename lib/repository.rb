@@ -6,6 +6,7 @@ class Repository < ActiveRecord::Base
     return unless page_parameters_valid?(title)
     raise if page_id < 1
     pages.create!(:title=> title, :local_id => page_id)
+    return #Just to emphasize it doesn't return the page
   end
 
   def page_parameters_valid?(title)
@@ -16,12 +17,33 @@ class Repository < ActiveRecord::Base
   def page_title_valid?(title)
     raise TitleNilError if title.nil?
     return false if title =~ /:/
-    raise "Invalid title #{title}" if title != Page.upcase_first_letter(title)
+    raise "Invalid title #{title}" if title != upcase_first_letter(title)
     return true
   end
 
-  def find_page_by_title(title)
-    pages.find_by_title(title)
+  def find_page_by_unupcased_title(title)
+    pages.find_by_title(upcase_first_letter(title))
+  end
+
+  def upcase_first_letter(string)
+    return string if string == ""
+    return string[0..0].upcase + string[1..-1]
+  end
+
+  def add_to_page_by_title_some_text(title, text)
+    page = pages.find_by_title(title)
+    raise if page.nil?
+    wiki_text = WikiText.new(text)
+    page.direct_link = nil
+    wiki_text.linked_articles.each do |potential_title|
+      potential_link = find_page_by_unupcased_title(potential_title)
+      if (potential_link and potential_link != page)
+        potential_link.backlinks << page
+        return
+      end
+    end
+    #page.save! #This and other saves are a temporary measure only
+    return
   end
 
   def analysis_output(res = "")

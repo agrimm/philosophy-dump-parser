@@ -11,25 +11,6 @@ class Page < ActiveRecord::Base
     local_id
   end
 
-  #Add text to set a direct link
-  def add_text(text)
-    wiki_text = WikiText.new(text)
-    self.direct_link = nil
-    wiki_text.linked_articles.each do |potential_title|
-      page = repository.pages.find_by_title(self.class.upcase_first_letter(potential_title))
-      if (page and page != self)
-        self.direct_link = page
-        break
-      end
-    end
-    self.save! #This and other saves are a temporary measure only
-  end
-
-  def self.upcase_first_letter(string)
-    return string if string == ""
-    return string[0..0].upcase + string[1..-1]
-  end
-
   #Title string - this is for display purposes, not for searching
   def title_string
     self.title

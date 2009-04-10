@@ -47,12 +47,16 @@ class TestHelperPageCreation
       title = random_title if title.nil?
       [title, links]
     end
-    titles_and_links.each do |title, links|
-      create_page({:title => title})
+    @repository.real_repository.within_transactions(100) do
+      titles_and_links.each do |title, links|
+        create_page({:title => title})
+      end
     end
-    titles_and_links.each_index do |i|
-      title, links = titles_and_links[i]
-      @repository.real_repository.add_to_page_by_title_some_text(title, links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
+    @repository.real_repository.within_transactions(100) do
+      titles_and_links.each_index do |i|
+        title, links = titles_and_links[i]
+        @repository.real_repository.add_to_page_by_title_some_text(title, links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
+      end
     end
     build_total_backlink_counts
     repository_pages

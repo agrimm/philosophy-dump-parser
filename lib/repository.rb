@@ -2,10 +2,32 @@ class Repository < ActiveRecord::Base
 
   has_many :pages
 
+  def execute_sometime(statement)
+    if @statements_to_be_executed.nil?
+      ActiveRecord::Base.connection.execute statement
+    else
+      @statements_to_be_executed << statement
+      STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000*$/
+    end
+  end
+
+  def within_transactions(size)
+    raise "Can't happen" unless @statements_to_be_executed.nil?
+    @statements_to_be_executed = []
+    yield
+    begin
+      ActiveRecord::Base.connection.execute "Begin"
+      @statements_to_be_executed.each {|statement| ActiveRecord::Base.connection.execute statement}
+    ensure
+      ActiveRecord::Base.connection.execute "Commit"
+    end
+    @statements_to_be_executed = nil
+  end
+
   def new_page_if_valid(title, page_id)
     return unless page_parameters_valid?(title)
     raise if page_id < 1
-    ActiveRecord::Base.connection.execute "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id})"
+    execute_sometime "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id})"
     return #Just to emphasize it doesn't return the page
   end
 
@@ -46,11 +68,11 @@ class Repository < ActiveRecord::Base
     wiki_text.linked_articles.each do |potential_title|
       potential_link_id = find_page_id_by_unupcased_title(potential_title)
       if (potential_link_id and potential_link_id != page_id)
-        ActiveRecord::Base.connection.execute "update pages set direct_link_id = #{potential_link_id} where id = #{page_id}"
+        execute_sometime "update pages set direct_link_id = #{potential_link_id} where id = #{page_id}"
         return
       end
     end
-    ActiveRecord::Base.connection.execute "update pages set direct_link_id = null where id = #{page_id}"
+    execute_sometime "update pages set direct_link_id = null where id = #{page_id}"
     return
   end
 

@@ -6,7 +6,7 @@ class Repository < ActiveRecord::Base
 
   def execute_sometime(statement)
     if @statements_to_be_executed.nil?
-      ActiveRecord::Base.connection.execute statement
+      raise "No request made to put statements into transactions: @statements_to_be_executed is #{@statements_to_be_executed.inspect}"
     else
       @statements_to_be_executed << statement
       STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000*$/ and $REPOSITORY_DEBUG_MODE

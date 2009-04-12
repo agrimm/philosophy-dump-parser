@@ -1,3 +1,5 @@
+$PAGE_XML_PARSER_DEBUG_MODE = false
+
 require "yaml"
 require "page"
 require "repository"
@@ -92,9 +94,13 @@ class PageXmlParser
   end
 
   def do_analysis
+    STDERR.puts "about to build title list at #{Time.now}" if $PAGE_XML_PARSER_DEBUG_MODE
     build_title_list
+    STDERR.puts "about to add text to pages at #{Time.now}" if $PAGE_XML_PARSER_DEBUG_MODE
     add_text_to_pages
+    STDERR.puts "about to build links at #{Time.now}" if $PAGE_XML_PARSER_DEBUG_MODE
     build_links
+    STDERR.puts "built links at #{Time.now}" if $PAGE_XML_PARSER_DEBUG_MODE
   end
 
   def repository

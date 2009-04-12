@@ -1,3 +1,5 @@
+$REPOSITORY_DEBUG_MODE = false
+
 class Repository < ActiveRecord::Base
 
   has_many :pages
@@ -7,7 +9,7 @@ class Repository < ActiveRecord::Base
       ActiveRecord::Base.connection.execute statement
     else
       @statements_to_be_executed << statement
-      STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000*$/
+      STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000*$/ and $REPOSITORY_DEBUG_MODE
     end
   end
 
@@ -16,11 +18,13 @@ class Repository < ActiveRecord::Base
     @statements_to_be_executed = []
     yield
     begin
+      STDERR.puts "About to commit #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
       ActiveRecord::Base.connection.execute "Begin"
       @statements_to_be_executed.each {|statement| ActiveRecord::Base.connection.execute statement}
     ensure
       ActiveRecord::Base.connection.execute "Commit"
     end
+    STDERR.puts "Committed #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     @statements_to_be_executed = nil
   end
 

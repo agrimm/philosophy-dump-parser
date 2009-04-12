@@ -6,6 +6,10 @@ class Page < ActiveRecord::Base
   belongs_to :repository
   belongs_to :direct_link, :class_name => "Page", :foreign_key => "direct_link_id"
   has_many :backlinks, :class_name => "Page", :foreign_key => "direct_link_id"
+  has_many :link_chain_elements, :foreign_key => :originating_page_id, :order => :chain_position_number
+  has_many :link_chain_pages, :through => :link_chain_elements, :source => :linked_page
+
+  private :link_chain_pages
 
   def page_id
     local_id
@@ -27,11 +31,15 @@ class Page < ActiveRecord::Base
   end
 
   def build_link_chain
+    raise "link_chain_pages is not empty (#{link_chain_pages.inspect})" unless link_chain_pages.empty?
     link_chain = [self]
     while (link_chain.last.direct_link and not (link_chain.include?(link_chain.last.direct_link)) )
        link_chain << link_chain.last.direct_link
     end
-    link_chain
+    link_chain.each_with_index do |linked_page, i|
+      ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i})"
+    end
+    nil
   end
 
   def link_chain_to_string(link_chain)
@@ -61,7 +69,12 @@ class Page < ActiveRecord::Base
   end
 
   def link_chain
-    @link_chain ||= build_link_chain
+    result = link_chain_pages
+    if result.empty?
+      build_link_chain
+      result = link_chain_pages(true)
+    end
+    result
   end
 
   def clear_link_chain_cache
@@ -148,3 +161,9 @@ class StringAggregator
     @array.join
   end
 end
+
+class LinkChainElement < ActiveRecord::Base
+  #belongs_to :originating_page, :class_name => "Page"
+  belongs_to :linked_page, :class_name => "Page"
+end
+

@@ -181,6 +181,15 @@ class TestPage < Test::Unit::TestCase
     assert_direct_link_to pages[0], pages[1], "Link to similar title does not work."
   end
 
+  def test_link_chain_pages_is_private
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [[nil, []]]
+    pages = test_helper_page_creation_object.create_network(network)
+    assert_raise(NoMethodError, "Doesn't treat link_chain_pages as private") do
+      pages[0].link_chain_pages
+    end
+  end
+
   def assert_has_page_id(page, expected_id)
     assert_equal expected_id, page.page_id
   end

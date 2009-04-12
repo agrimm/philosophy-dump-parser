@@ -58,7 +58,9 @@ class TestHelperPageCreation
         @repository.real_repository.add_to_page_by_title_some_text(title, links.map{|link| "[[#{link}]]"}.join(" and ") + ".")
       end
     end
-    build_total_backlink_counts
+    @repository.real_repository.within_transactions(nil) do
+      build_total_backlink_counts
+    end
     repository_pages
   end
 

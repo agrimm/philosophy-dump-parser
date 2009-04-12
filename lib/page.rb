@@ -97,10 +97,6 @@ class Page < ActiveRecord::Base
     end
   end
 
-  def increment_total_backlink_count
-    self.total_backlink_count += 1
-  end
-
   def total_backlink_count_string
     raise if total_backlink_count.nil?
     return "" if self.total_backlink_count == 0 #Currently not heckle-proof

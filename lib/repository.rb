@@ -116,7 +116,6 @@ class Repository < ActiveRecord::Base
         chain_ends[chain_end] = 0
       end
       chain_ends[chain_end] += 1
-      page.clear_link_chain_cache
     end
     raise "You've loaded me from active record, haven't you??" if @configuration.nil?
     minimum_threshold = @configuration.most_common_chain_endings_minimum_threshold
@@ -161,7 +160,6 @@ class Repository < ActiveRecord::Base
       linked_to_pages.each do |linked_to_page|
         execute_sometime("update pages set total_backlink_count = total_backlink_count + 1 where id = #{linked_to_page.id}")
       end
-      page.clear_link_chain_cache
     end
     #pages(true)
   end
@@ -198,7 +196,6 @@ class Repository < ActiveRecord::Base
     local_pages.each do |page|
       addition = page.send(string_method)
       result << addition << "\n" unless addition.empty?
-      page.clear_link_chain_cache #Clean up for memory purposes - may not be applicable for all string_methods though
     end
     result
   end

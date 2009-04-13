@@ -77,12 +77,7 @@ class Page < ActiveRecord::Base
     result
   end
 
-  def clear_link_chain_cache
-    @link_chain = nil
-  end
-
   def link_chain_without_loop
-    #Currently called only once, so not caching it.
     build_link_chain_without_loop
   end
 

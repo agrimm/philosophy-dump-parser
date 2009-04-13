@@ -10,22 +10,30 @@ class Repository < ActiveRecord::Base
     else
       @statements_to_be_executed << statement
       STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000*$/ and $REPOSITORY_DEBUG_MODE
+      commit_statements if @maximum_statements_allowed_in_queue and @statements_to_be_executed.size == @maximum_statements_allowed_in_queue
     end
   end
 
   def within_transactions(size)
     raise "Can't happen" unless @statements_to_be_executed.nil?
     @statements_to_be_executed = []
+    @maximum_statements_allowed_in_queue = size
     yield
+    commit_statements
+    @statements_to_be_executed = nil
+  end
+
+  def commit_statements
+    raise "Can't happen" if @statements_to_be_executed.nil?
+    STDERR.puts "About to commit #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     begin
-      STDERR.puts "About to commit #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
       ActiveRecord::Base.connection.execute "Begin"
       @statements_to_be_executed.each {|statement| ActiveRecord::Base.connection.execute statement}
     ensure
       ActiveRecord::Base.connection.execute "Commit"
     end
     STDERR.puts "Committed #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    @statements_to_be_executed = nil
+    @statements_to_be_executed = []
   end
 
   def new_page_if_valid(title, page_id)

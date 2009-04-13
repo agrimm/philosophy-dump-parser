@@ -77,7 +77,7 @@ class PageXmlParser
 
   def add_text_to_pages
     xml_handler = XmlHandler.new(@page_xml_file)
-    @repository.within_transactions(nil) do
+    @repository.within_transactions(100000) do
       while details = parse_next_valid_page_details(xml_handler)
         @repository.add_to_page_by_title_some_text(details[:title], details[:text])
       end
@@ -85,7 +85,7 @@ class PageXmlParser
   end
 
   def build_links
-    @repository.within_transactions(nil) do
+    @repository.within_transactions(100000) do
       @repository.build_total_backlink_counts
     end
   end

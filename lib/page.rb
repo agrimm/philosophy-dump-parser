@@ -8,8 +8,11 @@ class Page < ActiveRecord::Base
   has_many :backlinks, :class_name => "Page", :foreign_key => "direct_link_id"
   has_many :link_chain_elements, :foreign_key => :originating_page_id, :order => :chain_position_number
   has_many :link_chain_pages, :through => :link_chain_elements, :source => :linked_page
+  has_many :link_chain_without_loop_elements, :class_name => "LinkChainElement", :foreign_key => :originating_page_id, :order => :chain_position_number, :conditions => "is_in_loop_portion = 0"
+  has_many :link_chain_without_loop_pages, :through => :link_chain_without_loop_elements, :source => :linked_page
 
-  private :link_chain_pages
+  private :link_chain_pages, :link_chain_elements
+  private :link_chain_without_loop_elements, :link_chain_without_loop_pages
 
   def page_id
     local_id
@@ -36,8 +39,11 @@ class Page < ActiveRecord::Base
     while (link_chain.last.direct_link and not (link_chain.include?(link_chain.last.direct_link)) )
        link_chain << link_chain.last.direct_link
     end
+    is_in_loop_portion = false
     link_chain.each_with_index do |linked_page, i|
-      ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i})"
+      ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
+      #To do: check if "linked_page == link_chain.last" is redundant
+      is_in_loop_portion = ((linked_page == link_chain.last) or (linked_page == link_chain.last.direct_link))
     end
     nil
   end
@@ -53,21 +59,6 @@ class Page < ActiveRecord::Base
     result
   end
 
-  def build_link_chain_without_loop
-    unless link_chain_enters_loop?
-      return link_chain
-    else
-      link_chain_without_loop = []
-      link_chain.each do |page|
-        link_chain_without_loop << page
-        if page == link_chain_end
-          break
-        end
-      end
-      return link_chain_without_loop
-    end
-  end
-
   def link_chain
     result = link_chain_pages
     if result.empty?
@@ -78,7 +69,9 @@ class Page < ActiveRecord::Base
   end
 
   def link_chain_without_loop
-    build_link_chain_without_loop
+    result = link_chain_without_loop_pages
+    raise if result.empty?
+    result
   end
 
   def link_chain_string
@@ -89,9 +82,6 @@ class Page < ActiveRecord::Base
     link_chain.last.direct_link || link_chain.last
   end
 
-  def link_chain_enters_loop?
-    link_chain.last.direct_link
-  end
 
   def direct_backlink_count
     backlinks.size

@@ -153,6 +153,7 @@ class Repository < ActiveRecord::Base
 
   def build_total_backlink_counts
     raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
+    each_page {|page| page.link_chain}
     each_page {|page| execute_sometime("update pages set total_backlink_count = 0")}
     #each_page {|page| page.reload}
     each_page do |page|

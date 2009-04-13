@@ -85,9 +85,7 @@ class PageXmlParser
   end
 
   def build_links
-    @repository.within_transactions(100000) do
-      @repository.build_total_backlink_counts
-    end
+    @repository.build_total_backlink_counts
   end
 
   def build_title_list

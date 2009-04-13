@@ -8,6 +8,8 @@ class Page < ActiveRecord::Base
   has_many :backlinks, :class_name => "Page", :foreign_key => "direct_link_id"
   has_many :link_chain_elements, :foreign_key => :originating_page_id, :order => :chain_position_number
   has_many :link_chain_pages, :through => :link_chain_elements, :source => :linked_page
+  has_many :direct_or_indirect_backlink_elements, :class_name => "LinkChainElement", :foreign_key => :linked_page_id, :conditions => "is_in_loop_portion = 0"
+  has_many :direct_or_indirect_backlinks, :through => :direct_or_indirect_backlink_elements, :source => :originating_page
   has_many :link_chain_without_loop_elements, :class_name => "LinkChainElement", :foreign_key => :originating_page_id, :order => :chain_position_number, :conditions => "is_in_loop_portion = 0"
   has_many :link_chain_without_loop_pages, :through => :link_chain_without_loop_elements, :source => :linked_page
 
@@ -40,10 +42,15 @@ class Page < ActiveRecord::Base
        link_chain << link_chain.last.direct_link
     end
     is_in_loop_portion = false
-    link_chain.each_with_index do |linked_page, i|
-      ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
-      #To do: check if "linked_page == link_chain.last" is redundant
-      is_in_loop_portion = ((linked_page == link_chain.last) or (linked_page == link_chain.last.direct_link))
+    begin
+      ActiveRecord::Base.connection.execute "Begin"
+      link_chain.each_with_index do |linked_page, i|
+        ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
+        #To do: check if "linked_page == link_chain.last" is redundant
+        is_in_loop_portion = ((linked_page == link_chain.last) or (linked_page == link_chain.last.direct_link))
+      end
+    ensure
+      ActiveRecord::Base.connection.execute "Commit"
     end
     nil
   end
@@ -93,6 +100,10 @@ class Page < ActiveRecord::Base
     else
       return "#{backlinks.size} pages link to #{title_string}"
     end
+  end
+
+  def calculate_total_backlink_count
+    direct_or_indirect_backlinks.size - 1 #To avoid counting a page linking to itself
   end
 
   def total_backlink_count_string
@@ -148,7 +159,7 @@ class StringAggregator
 end
 
 class LinkChainElement < ActiveRecord::Base
-  #belongs_to :originating_page, :class_name => "Page"
+  belongs_to :originating_page, :class_name => "Page"
   belongs_to :linked_page, :class_name => "Page"
 end
 

@@ -58,7 +58,7 @@ class PageXmlParser
   end
 
   def parse_pages_for_titles(xml_handler)
-    @repository.within_transactions(nil) do
+    @repository.within_transactions(100000) do
       while (parse_result = xml_handler.parse_next_page_details)
         title, page_id = parse_result[:title], parse_result[:page_id]
         @repository.new_page_if_valid(title, page_id)

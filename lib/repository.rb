@@ -152,13 +152,14 @@ class Repository < ActiveRecord::Base
   end
 
   def build_total_backlink_counts
-    raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
+    #raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
     STDERR.puts "About to build link chains at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     $direct_link_hash = calculate_direct_link_hash
-    each_page {|page| page.link_chain}
+    STDERR.puts "Calculated direct link hash at #{Time.now}" if $REPOSITORY_DEBUG_MODE
+    each_page {|page| page.build_link_chain}
     $direct_link_hash = nil
     STDERR.puts "About to calculate total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    within_transactions(10000) do
+    within_transactions(100000) do
       each_page do |page|
         page_total_backlink_count = page.calculate_total_backlink_count
         execute_sometime("update pages set total_backlink_count = #{page_total_backlink_count} where id = #{page.id}")

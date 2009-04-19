@@ -9,7 +9,7 @@ class Repository < ActiveRecord::Base
       raise "No request made to put statements into transactions: @statements_to_be_executed is #{@statements_to_be_executed.inspect}"
     else
       @statements_to_be_executed << statement
-      STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000*$/ and $REPOSITORY_DEBUG_MODE
+      STDERR.puts "Size of #{@statements_to_be_executed.size} at #{Time.now}" if @statements_to_be_executed.size.to_s =~ /^[125]000+$/ and $REPOSITORY_DEBUG_MODE
       commit_statements if @maximum_statements_allowed_in_queue and @statements_to_be_executed.size == @maximum_statements_allowed_in_queue
     end
   end
@@ -153,13 +153,16 @@ class Repository < ActiveRecord::Base
 
   def build_total_backlink_counts
     raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
+    STDERR.puts "About to build link chains at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     each_page {|page| page.link_chain}
+    STDERR.puts "About to calculate total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     within_transactions(10000) do
       each_page do |page|
         page_total_backlink_count = page.calculate_total_backlink_count
         execute_sometime("update pages set total_backlink_count = #{page_total_backlink_count} where id = #{page.id}")
       end
     end
+    STDERR.puts "Calculated total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
   end
 
   def page_count

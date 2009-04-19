@@ -37,17 +37,26 @@ class Page < ActiveRecord::Base
 
   def build_link_chain
     raise "link_chain_pages is not empty (#{link_chain_pages.inspect})" unless link_chain_pages.empty?
-    link_chain = [self]
-    while (link_chain.last.direct_link and not (link_chain.include?(link_chain.last.direct_link)) )
-       link_chain << link_chain.last.direct_link
+    result_to_be_saved = calculate_link_chain
+    save_link_chain(result_to_be_saved)
+  end
+
+  def calculate_link_chain
+    result_to_be_saved = [self]
+    while (result_to_be_saved.last.direct_link and not (result_to_be_saved.include?(result_to_be_saved.last.direct_link)) )
+       result_to_be_saved << result_to_be_saved.last.direct_link
     end
+    result_to_be_saved
+  end
+
+  def save_link_chain(result_to_be_saved)
     is_in_loop_portion = false
     begin
       ActiveRecord::Base.connection.execute "Begin"
-      link_chain.each_with_index do |linked_page, i|
+      result_to_be_saved.each_with_index do |linked_page, i|
         ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
         #To do: check if "linked_page == link_chain.last" is redundant
-        is_in_loop_portion = ((linked_page == link_chain.last) or (linked_page == link_chain.last.direct_link))
+        is_in_loop_portion = ((linked_page == result_to_be_saved.last) or (linked_page == result_to_be_saved.last.direct_link))
       end
     ensure
       ActiveRecord::Base.connection.execute "Commit"

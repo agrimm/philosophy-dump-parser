@@ -35,35 +35,6 @@ class Page < ActiveRecord::Base
     end
   end
 
-  def build_link_chain
-    raise "link_chain_pages is not empty (#{link_chain_pages.inspect})" unless link_chain_pages.empty?
-    result_to_be_saved = calculate_link_chain
-    save_link_chain(result_to_be_saved)
-  end
-
-  def calculate_link_chain
-    result_to_be_saved = [self.id]
-    while ($direct_link_hash[result_to_be_saved.last] and not (result_to_be_saved.include?($direct_link_hash[result_to_be_saved.last])) )
-       result_to_be_saved << $direct_link_hash[result_to_be_saved.last]
-    end
-    result_to_be_saved
-  end
-
-  def save_link_chain(result_to_be_saved)
-    is_in_loop_portion = false
-    begin
-      ActiveRecord::Base.connection.execute "Begin"
-      result_to_be_saved.each_with_index do |linked_page_id, i|
-        ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page_id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
-        #To do: check if "linked_page_id == result_to_be_saved.last" is redundant
-        is_in_loop_portion = ((linked_page_id == result_to_be_saved.last) or (linked_page_id == $direct_link_hash[result_to_be_saved.last]))
-      end
-    ensure
-      ActiveRecord::Base.connection.execute "Commit"
-    end
-    nil
-  end
-
   def link_chain_to_string(link_chain)
     string_aggregator = StringAggregator.new(link_chain.first.title_string) << " "
     link_chain.each_with_index do |chain_item, index|
@@ -78,8 +49,7 @@ class Page < ActiveRecord::Base
   def link_chain
     result = link_chain_pages
     if result.empty?
-      build_link_chain
-      result = link_chain_pages(true)
+      raise "Link chains have not been built"
     end
     result
   end

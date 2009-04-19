@@ -156,7 +156,9 @@ class Repository < ActiveRecord::Base
     STDERR.puts "About to build link chains at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     $direct_link_hash = calculate_direct_link_hash
     STDERR.puts "Calculated direct link hash at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    each_page {|page| page.build_link_chain}
+    within_transactions(100000) do
+      each_page {|page| build_link_chain_for_page(page)}
+    end
     $direct_link_hash = nil
     STDERR.puts "About to calculate total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     within_transactions(100000) do
@@ -183,6 +185,31 @@ class Repository < ActiveRecord::Base
       offset += limit
     end
     result
+  end
+
+  def build_link_chain_for_page(page)
+    #raise "link_chain_pages is not empty (#{link_chain_pages.inspect})" unless link_chain_pages.empty?
+    page_id = page.id
+    result_to_be_saved = calculate_link_chain_for_page_id(page_id)
+    save_link_chain(page_id, result_to_be_saved)
+  end
+
+  def calculate_link_chain_for_page_id(page_id)
+    result_to_be_saved = [page_id]
+    while ($direct_link_hash[result_to_be_saved.last] and not (result_to_be_saved.include?($direct_link_hash[result_to_be_saved.last])) )
+       result_to_be_saved << $direct_link_hash[result_to_be_saved.last]
+    end
+    result_to_be_saved
+  end
+
+  def save_link_chain(originating_page_id, result_to_be_saved)
+    is_in_loop_portion = false
+    result_to_be_saved.each_with_index do |linked_page_id, i|
+      execute_sometime("insert into link_chain_elements VALUES (null, #{self.id}, #{originating_page_id}, #{linked_page_id}, #{i}, #{is_in_loop_portion ? 1 : 0})")
+      #To do: check if "linked_page_id == result_to_be_saved.last" is redundant
+      is_in_loop_portion = ((linked_page_id == result_to_be_saved.last) or (linked_page_id == $direct_link_hash[result_to_be_saved.last]))
+    end
+    nil
   end
 
   def page_count

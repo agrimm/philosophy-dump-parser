@@ -154,7 +154,9 @@ class Repository < ActiveRecord::Base
   def build_total_backlink_counts
     raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
     STDERR.puts "About to build link chains at #{Time.now}" if $REPOSITORY_DEBUG_MODE
+    $direct_link_hash = calculate_direct_link_hash
     each_page {|page| page.link_chain}
+    $direct_link_hash = nil
     STDERR.puts "About to calculate total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     within_transactions(10000) do
       each_page do |page|
@@ -163,6 +165,23 @@ class Repository < ActiveRecord::Base
       end
     end
     STDERR.puts "Calculated total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
+  end
+
+  def calculate_direct_link_hash
+    result = {}
+    offset = 0
+    limit = 10000
+    while true
+      sql_result = connection.select_all("select id, direct_link_id from pages where repository_id = #{self.id} limit #{limit} offset #{offset}")
+      break if sql_result.empty?
+      sql_result.each do |sql_row|
+        id = sql_row["id"].to_i
+        direct_link_id = sql_row["direct_link_id"].to_i
+        result[id] = direct_link_id unless direct_link_id.zero?
+      end
+      offset += limit
+    end
+    result
   end
 
   def page_count

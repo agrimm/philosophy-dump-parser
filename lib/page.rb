@@ -42,9 +42,9 @@ class Page < ActiveRecord::Base
   end
 
   def calculate_link_chain
-    result_to_be_saved = [self]
-    while (result_to_be_saved.last.direct_link and not (result_to_be_saved.include?(result_to_be_saved.last.direct_link)) )
-       result_to_be_saved << result_to_be_saved.last.direct_link
+    result_to_be_saved = [self.id]
+    while ($direct_link_hash[result_to_be_saved.last] and not (result_to_be_saved.include?($direct_link_hash[result_to_be_saved.last])) )
+       result_to_be_saved << $direct_link_hash[result_to_be_saved.last]
     end
     result_to_be_saved
   end
@@ -53,10 +53,10 @@ class Page < ActiveRecord::Base
     is_in_loop_portion = false
     begin
       ActiveRecord::Base.connection.execute "Begin"
-      result_to_be_saved.each_with_index do |linked_page, i|
-        ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page.id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
-        #To do: check if "linked_page == link_chain.last" is redundant
-        is_in_loop_portion = ((linked_page == result_to_be_saved.last) or (linked_page == result_to_be_saved.last.direct_link))
+      result_to_be_saved.each_with_index do |linked_page_id, i|
+        ActiveRecord::Base.connection.execute "insert into link_chain_elements VALUES (null, #{repository.id}, #{self.id}, #{linked_page_id}, #{i}, #{is_in_loop_portion ? 1 : 0})"
+        #To do: check if "linked_page_id == result_to_be_saved.last" is redundant
+        is_in_loop_portion = ((linked_page_id == result_to_be_saved.last) or (linked_page_id == $direct_link_hash[result_to_be_saved.last]))
       end
     ensure
       ActiveRecord::Base.connection.execute "Commit"

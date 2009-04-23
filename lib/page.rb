@@ -6,14 +6,11 @@ class Page < ActiveRecord::Base
   belongs_to :repository
   belongs_to :direct_link, :class_name => "Page", :foreign_key => "direct_link_id"
   has_many :backlinks, :class_name => "Page", :foreign_key => "direct_link_id"
-  has_many :link_chain_elements, :foreign_key => :originating_page_id, :order => :chain_position_number
-  has_many :link_chain_pages, :through => :link_chain_elements, :source => :linked_page
   has_many :direct_or_indirect_backlink_elements, :class_name => "LinkChainElement", :foreign_key => :linked_page_id, :conditions => "is_in_loop_portion = 0"
   has_many :direct_or_indirect_backlinks, :through => :direct_or_indirect_backlink_elements, :source => :originating_page
   has_many :link_chain_without_loop_elements, :class_name => "LinkChainElement", :foreign_key => :originating_page_id, :order => :chain_position_number, :conditions => "is_in_loop_portion = 0"
   has_many :link_chain_without_loop_pages, :through => :link_chain_without_loop_elements, :source => :linked_page
 
-  private :link_chain_pages, :link_chain_elements
   private :link_chain_without_loop_elements, :link_chain_without_loop_pages
 
   def page_id
@@ -47,10 +44,8 @@ class Page < ActiveRecord::Base
   end
 
   def link_chain
-    result = link_chain_pages
-    if result.empty?
-      raise "Link chains have not been built"
-    end
+    page_ids = repository.calculate_link_chain_for_page_id(self.id)
+    result = self.class.find(page_ids)
     result
   end
 

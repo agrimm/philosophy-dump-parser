@@ -162,10 +162,7 @@ class Repository < ActiveRecord::Base
     $direct_link_hash = nil
     STDERR.puts "About to calculate total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     within_transactions(100000) do
-      each_page do |page|
-        page_total_backlink_count = page.calculate_total_backlink_count
-        execute_sometime("update pages set total_backlink_count = #{page_total_backlink_count} where id = #{page.id}")
-      end
+      execute_sometime("UPDATE pages SET total_backlink_count = (SELECT count(*) FROM link_chain_elements WHERE link_chain_elements.linked_page_id = pages.id and is_in_loop_portion = 0) - 1 where repository_id = #{self.id}")
     end
     STDERR.puts "Calculated total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
   end

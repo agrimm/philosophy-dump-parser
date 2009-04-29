@@ -33,7 +33,7 @@ class TestPage < Test::Unit::TestCase
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ [nil, []] ]
     page, = test_helper_page_creation_object.create_network(network)
-    assert_has_page_id page, 1
+    assert_has_local_id page, 1
   end
 
 #Some testing exists in tc_page_xml_parsing.rb
@@ -190,8 +190,8 @@ class TestPage < Test::Unit::TestCase
     end
   end
 
-  def assert_has_page_id(page, expected_id)
-    assert_equal expected_id, page.page_id
+  def assert_has_local_id(page, expected_id)
+    assert_equal expected_id, page.local_id
   end
 
   def assert_direct_link_to(originating_page, expected_target_page, message = nil)

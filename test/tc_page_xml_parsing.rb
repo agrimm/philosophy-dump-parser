@@ -30,8 +30,8 @@ class TestXmlParsing < Test::Unit::TestCase
     xml_file = test_helper_xml_creation_object.create_xml_file_given_page_elements([mainspace_page_xml_element, second_mainspace_page_xml_element])
     page_xml_parser = create_xml_parser(xml_file)
     pages = page_xml_parser.repository.pages
-    assert_has_page_id pages[0], 42
-    assert_has_page_id pages[1], 67
+    assert_has_local_id pages[0], 42
+    assert_has_local_id pages[1], 67
   end
 
   def test_reject_zero_page_id
@@ -165,8 +165,8 @@ class TestXmlParsing < Test::Unit::TestCase
     end
   end
 
-  def assert_has_page_id(page, expected_id)
-    assert_equal expected_id, page.page_id
+  def assert_has_local_id(page, expected_id)
+    assert_equal expected_id, page.local_id
   end
 
   def create_pages_given_page_elements(page_elements)

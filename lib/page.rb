@@ -13,10 +13,6 @@ class Page < ActiveRecord::Base
 
   private :link_chain_without_loop_elements, :link_chain_without_loop_pages
 
-  def page_id
-    local_id
-  end
-
   #Title string - this is for display purposes, not for searching
   def title_string
     self.title

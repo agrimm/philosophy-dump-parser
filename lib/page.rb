@@ -6,12 +6,6 @@ class Page < ActiveRecord::Base
   belongs_to :repository
   belongs_to :direct_link, :class_name => "Page", :foreign_key => "direct_link_id"
   has_many :backlinks, :class_name => "Page", :foreign_key => "direct_link_id"
-  has_many :direct_or_indirect_backlink_elements, :class_name => "LinkChainElement", :foreign_key => :linked_page_id, :conditions => "is_in_loop_portion = 0"
-  has_many :direct_or_indirect_backlinks, :through => :direct_or_indirect_backlink_elements, :source => :originating_page
-  has_many :link_chain_without_loop_elements, :class_name => "LinkChainElement", :foreign_key => :originating_page_id, :order => :chain_position_number, :conditions => "is_in_loop_portion = 0"
-  has_many :link_chain_without_loop_pages, :through => :link_chain_without_loop_elements, :source => :linked_page
-
-  private :link_chain_without_loop_elements, :link_chain_without_loop_pages
 
   #Title string - this is for display purposes, not for searching
   def title_string
@@ -53,8 +47,8 @@ class Page < ActiveRecord::Base
   end
 
   def link_chain_without_loop
-    result = link_chain_without_loop_pages
-    raise if result.empty?
+    page_ids = repository.calculate_link_chain_without_loop_for_page_id(self.id)
+    result = self.class.find_pages_given_page_ids(page_ids)
     result
   end
 
@@ -79,9 +73,7 @@ class Page < ActiveRecord::Base
     end
   end
 
-  def calculate_total_backlink_count
-    direct_or_indirect_backlinks.size - 1 #To avoid counting a page linking to itself
-  end
+  #insert method calculate_total_backlink_count here if appropriate
 
   def total_backlink_count_string
     raise if total_backlink_count.nil?
@@ -133,10 +125,5 @@ class StringAggregator
   def to_s
     @array.join
   end
-end
-
-class LinkChainElement < ActiveRecord::Base
-  belongs_to :originating_page, :class_name => "Page"
-  belongs_to :linked_page, :class_name => "Page"
 end
 

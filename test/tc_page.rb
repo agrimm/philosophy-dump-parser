@@ -54,6 +54,14 @@ class TestPage < Test::Unit::TestCase
     assert_link_chain_with_loop_matches linking_page, [linking_page, philosophy_page], "Link chain is not correct or is not in the correct order"
   end
 
+  #The network used in this test doesn't use a loop, because it isn't needed
+  def test_link_chain_without_loop_is_in_correct_order
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [ ["Philosophy page", []], [nil, ["Philosophy page"]] ]
+    philosophy_page, linking_page = test_helper_page_creation_object.create_network(network)
+    assert_link_chain_without_loop_matches linking_page, [linking_page, philosophy_page], "Link chain is not correct or is not in the correct order"
+  end
+
   def dont_test_asking_for_link_information_without_building_links_throws_exception
     test_helper_page_creation_object = TestHelperPageCreation.new
     network = [ ["Philosophy page", ["Looping page"]], ["Looping page", ["Philosophy page"]], [nil, ["Philosophy page"]] ]
@@ -206,9 +214,9 @@ class TestPage < Test::Unit::TestCase
     assert_equal expected_target_page, actual_target_page, message
   end
 
-  def assert_link_chain_without_loop_matches(originating_page, expected_chain)
+  def assert_link_chain_without_loop_matches(originating_page, expected_chain, message = nil)
     actual_chain = originating_page.link_chain_without_loop
-    assert_equal expected_chain, actual_chain
+    assert_equal expected_chain, actual_chain, message
   end
 
   def assert_link_chain_with_loop_matches(originating_page, expected_chain, message)

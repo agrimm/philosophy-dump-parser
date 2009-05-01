@@ -198,12 +198,19 @@ class Repository < ActiveRecord::Base
     result_to_be_saved
   end
 
+  def calculate_link_chain_without_loop_for_page_id(page_id)
+    link_chain_with_loop = calculate_link_chain_for_page_id(page_id)
+    result = []
+    link_chain_with_loop.each do |linked_page_id|
+      result << linked_page_id
+      break if linked_page_id == $direct_link_hash[link_chain_with_loop.last]
+    end
+    result
+  end
+
   def save_link_chain(originating_page_id, result_to_be_saved)
-    is_in_loop_portion = false
-    result_to_be_saved.each_with_index do |linked_page_id, i|
-      execute_sometime("insert into link_chain_elements VALUES (null, #{self.id}, #{originating_page_id}, #{linked_page_id}, #{i}, #{is_in_loop_portion ? 1 : 0})")
-      #To do: check if "linked_page_id == result_to_be_saved.last" is redundant
-      is_in_loop_portion = ((linked_page_id == result_to_be_saved.last) or (linked_page_id == $direct_link_hash[result_to_be_saved.last]))
+    calculate_link_chain_without_loop_for_page_id(originating_page_id).each do |linked_page_id|
+      execute_sometime("insert into link_chain_elements VALUES (null, #{self.id}, #{originating_page_id}, #{linked_page_id}, 0, 0)")
     end
     nil
   end

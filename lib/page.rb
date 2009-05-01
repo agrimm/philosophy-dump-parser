@@ -39,9 +39,16 @@ class Page < ActiveRecord::Base
     result
   end
 
+  def self.find_pages_given_page_ids(page_ids)
+    #Requires O(n) requests to the database
+    #To do: See if http://stackoverflow.com/questions/801824 comes up with a better way
+    result = page_ids.map{|p_id| find(p_id)}
+    result
+  end
+
   def link_chain
     page_ids = repository.calculate_link_chain_for_page_id(self.id)
-    result = self.class.find(page_ids)
+    result = self.class.find_pages_given_page_ids(page_ids)
     result
   end
 

@@ -155,15 +155,22 @@ class Repository < ActiveRecord::Base
     #raise "You've already run this" if pages.any? {|page| page.total_backlink_count}
     STDERR.puts "About to build link chains at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     $direct_link_hash = calculate_direct_link_hash
+    total_backlink_count_hash = Hash.new(0)
     STDERR.puts "Calculated direct link hash at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    within_transactions(100000) do
-      each_page {|page| build_link_chain_for_page(page)}
+    each_page do |page|
+      link_chain = calculate_link_chain_without_loop_for_page_id(page.id)
+      link_chain[1..-1].each do |link_chain_page_id|
+        total_backlink_count_hash[link_chain_page_id] += 1
+      end
     end
-    STDERR.puts "About to calculate total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
+    STDERR.puts "About to save total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     within_transactions(100000) do
-      execute_sometime("UPDATE pages SET total_backlink_count = (SELECT count(*) FROM link_chain_elements WHERE link_chain_elements.linked_page_id = pages.id and is_in_loop_portion = 0) - 1 where repository_id = #{self.id}")
+      each_page do |page|
+        page_id = page.id
+        execute_sometime("UPDATE pages SET total_backlink_count = #{total_backlink_count_hash[page_id]} where id = #{page_id}")
+      end
     end
-    STDERR.puts "Calculated total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
+    STDERR.puts "Saved total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
   end
 
   def calculate_direct_link_hash
@@ -183,13 +190,6 @@ class Repository < ActiveRecord::Base
     result
   end
 
-  def build_link_chain_for_page(page)
-    #raise "link_chain_pages is not empty (#{link_chain_pages.inspect})" unless link_chain_pages.empty?
-    page_id = page.id
-    result_to_be_saved = calculate_link_chain_for_page_id(page_id)
-    save_link_chain(page_id, result_to_be_saved)
-  end
-
   def calculate_link_chain_for_page_id(page_id)
     result_to_be_saved = [page_id]
     while ($direct_link_hash[result_to_be_saved.last] and not (result_to_be_saved.include?($direct_link_hash[result_to_be_saved.last])) )
@@ -206,13 +206,6 @@ class Repository < ActiveRecord::Base
       break if linked_page_id == $direct_link_hash[link_chain_with_loop.last]
     end
     result
-  end
-
-  def save_link_chain(originating_page_id, result_to_be_saved)
-    calculate_link_chain_without_loop_for_page_id(originating_page_id).each do |linked_page_id|
-      execute_sometime("insert into link_chain_elements VALUES (null, #{self.id}, #{originating_page_id}, #{linked_page_id}, 0, 0)")
-    end
-    nil
   end
 
   def page_count

@@ -140,15 +140,8 @@ class Repository < ActiveRecord::Base
     @configuration = configuration
   end
 
-  def each_page
-    offset = 0
-    limit = 100
-    while true
-      pages_chunk = pages.find(:all, :order => "id", :limit => limit, :offset => offset)
-      break if pages_chunk.empty?
-      pages_chunk.each {|page| yield page}
-      offset += limit
-    end
+  def each_page_id
+    $direct_link_hash.each_key {|k| yield k}
   end
 
   def build_total_backlink_counts
@@ -157,16 +150,15 @@ class Repository < ActiveRecord::Base
     $direct_link_hash = calculate_direct_link_hash
     total_backlink_count_hash = Hash.new(0)
     STDERR.puts "Calculated direct link hash at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    each_page do |page|
-      link_chain = calculate_link_chain_without_loop_for_page_id(page.id)
+    each_page_id do |page_id|
+      link_chain = calculate_link_chain_without_loop_for_page_id(page_id)
       link_chain[1..-1].each do |link_chain_page_id|
         total_backlink_count_hash[link_chain_page_id] += 1
       end
     end
     STDERR.puts "About to save total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     within_transactions(100000) do
-      each_page do |page|
-        page_id = page.id
+      each_page_id do |page_id|
         execute_sometime("UPDATE pages SET total_backlink_count = #{total_backlink_count_hash[page_id]} where id = #{page_id}")
       end
     end
@@ -183,7 +175,11 @@ class Repository < ActiveRecord::Base
       sql_result.each do |sql_row|
         id = sql_row["id"].to_i
         direct_link_id = sql_row["direct_link_id"].to_i
-        result[id] = direct_link_id unless direct_link_id.zero?
+        unless direct_link_id.zero?
+          result[id] = direct_link_id
+        else
+          result[id] = nil #Added so that all page ids are included in the hash
+        end
       end
       offset += limit
     end

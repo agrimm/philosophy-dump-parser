@@ -39,7 +39,7 @@ class Repository < ActiveRecord::Base
   def new_page_if_valid(title, page_id)
     return unless page_parameters_valid?(title)
     raise if page_id < 1
-    execute_sometime "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id})"
+    execute_sometime "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id}, null)"
     return #Just to emphasize it doesn't return the page
   end
 
@@ -150,10 +150,14 @@ class Repository < ActiveRecord::Base
     $direct_link_hash = calculate_direct_link_hash
     total_backlink_count_hash = Hash.new(0)
     STDERR.puts "Calculated direct link hash at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    each_page_id do |page_id|
-      link_chain = calculate_link_chain_without_loop_for_page_id(page_id)
-      link_chain[1..-1].each do |link_chain_page_id|
-        total_backlink_count_hash[link_chain_page_id] += 1
+    within_transactions(100000) do
+      each_page_id do |page_id|
+        link_chain = calculate_link_chain_without_loop_for_page_id(page_id)
+        link_chain_number_of_links = link_chain.length - 1
+        execute_sometime("UPDATE pages set chain_without_loop_length = #{link_chain_number_of_links} where id = #{page_id}")
+        link_chain[1..-1].each do |link_chain_page_id|
+          total_backlink_count_hash[link_chain_page_id] += 1
+        end
       end
     end
     STDERR.puts "About to save total backlink counts at #{Time.now}" if $REPOSITORY_DEBUG_MODE

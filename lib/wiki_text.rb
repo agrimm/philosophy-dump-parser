@@ -38,10 +38,9 @@ class WikiText
     wiki_text
   end
 
-  #Remove paired XHTML-style syntax 
+  #Remove paired XHTML-style syntax, and the contents inside
   def parse_paired_tags(wiki_text)
-    #Remove paired tags
-    wiki_text.gsub!(%r{<([a-zA-Z]*)>(.*?)</\1>}im, '\2')
+    wiki_text.gsub!(%r{<([a-zA-Z]*)([^/a-zA-Z][^/>]*)?>(.*?)</\1>}im, '')
     wiki_text
   end
 

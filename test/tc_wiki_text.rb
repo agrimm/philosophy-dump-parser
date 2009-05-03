@@ -39,6 +39,11 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_first_article_is(original_text, "Lost in space")
   end
 
+  def test_ignore_text_within_tags
+    original_text = '<ref name="multiple">Author, A. (2007). "How to cite references", [[New York]]: McGraw-Hill.</ref> is not [[Sydney]]'
+    assert_first_article_is(original_text, "Sydney")
+  end
+
   def assert_first_article_is(text, expected_article)
     wiki_text = WikiText.new(text)
     articles = wiki_text.linked_articles

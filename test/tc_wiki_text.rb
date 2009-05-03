@@ -29,6 +29,15 @@ class TestXmlParsing < Test::Unit::TestCase
     assert_first_article_is(original_text, "Target page")
   end
 
+  def test_handle_multiple_spaces
+    original_text = "[[Lost        in            space]]"
+    assert_first_article_is(original_text, "Lost in space")
+  end
+
+  def test_handle_spaces_at_start_and_end
+    original_text = "[[ Lost in space  ]]"
+    assert_first_article_is(original_text, "Lost in space")
+  end
 
   def assert_first_article_is(text, expected_article)
     wiki_text = WikiText.new(text)

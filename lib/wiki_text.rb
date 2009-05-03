@@ -82,6 +82,13 @@ class WikiText
     wiki_text
   end
 
+  def parse_title(unparsed_title)
+    result = unparsed_title.gsub(/[_ ]+/, " ")
+    result.strip!
+    result
+  end
+
+
   #Look for wikilinks in a piece of text
   def calculate_linked_articles(document_text)
     parsed_wiki_text = parse_wiki_text(document_text)
@@ -89,7 +96,7 @@ class WikiText
     parsed_wiki_article_titles = []
     unparsed_match_arrays.each do |unparsed_match_array|
       unparsed_title = unparsed_match_array.first
-      parsed_title = unparsed_title.gsub(/_+/, " ")
+      parsed_title = parse_title(unparsed_title)
       parsed_wiki_article_titles << parsed_title
     end
     parsed_wiki_article_titles.uniq

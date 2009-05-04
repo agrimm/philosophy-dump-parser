@@ -5,7 +5,16 @@ class WikiText
 
   def initialize(document_text)
     text_copy = String.new(document_text)
+    @is_redirect = is_redirect_syntax?(text_copy)
     @linked_articles = calculate_linked_articles(text_copy)
+  end
+
+  def redirect?
+    @is_redirect
+  end
+
+  def is_redirect_syntax?(text_copy)
+    text_copy =~ /^#redirect/i
   end
 
   #Remove from MediaWiki text anything that is surrounded by <nowiki>

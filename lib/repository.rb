@@ -39,7 +39,7 @@ class Repository < ActiveRecord::Base
   def new_page_if_valid(title, page_id)
     return unless page_parameters_valid?(title)
     raise if page_id < 1
-    execute_sometime "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id}, null)"
+    execute_sometime "insert into pages VALUES (null, '#{sql_fake_escape(title)}', #{page_id}, null, null, #{self.id}, null, null)"
     return #Just to emphasize it doesn't return the page
   end
 
@@ -77,14 +77,15 @@ class Repository < ActiveRecord::Base
   def add_to_page_by_title_some_text(title, text)
     page_id = find_page_id_by_title(title)
     wiki_text = WikiText.new(text)
+    redirect_number = wiki_text.redirect? ? 1 : 0
     wiki_text.linked_articles.each do |potential_title|
       potential_link_id = find_page_id_by_unupcased_title(potential_title)
       if (potential_link_id and potential_link_id != page_id)
-        execute_sometime "update pages set direct_link_id = #{potential_link_id} where id = #{page_id}"
+        execute_sometime "update pages set direct_link_id = #{potential_link_id}, redirect = #{redirect_number} where id = #{page_id}" #redirect_number not unit tested on this line
         return
       end
     end
-    execute_sometime "update pages set direct_link_id = null where id = #{page_id}"
+    execute_sometime "update pages set direct_link_id = null, redirect = #{redirect_number} where id = #{page_id}"
     return
   end
 

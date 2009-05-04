@@ -205,6 +205,20 @@ class TestPage < Test::Unit::TestCase
     end
   end
 
+  def test_detect_redirects
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [["Australia (movie)", "#REDIRECT [[Australia (film)]]"]]
+    pages = test_helper_page_creation_object.create_network_with_wiki_text(network)
+    assert_is_redirect pages[0], "Can't detect redirect"
+  end
+
+  def test_detect_non_redirect
+    test_helper_page_creation_object = TestHelperPageCreation.new
+    network = [["Australia (movie)", "text " * 50 + "[[Australia (film)]]"]]
+    pages = test_helper_page_creation_object.create_network_with_wiki_text(network)
+    assert_is_not_redirect pages[0], "Can't detect non redirect"
+  end
+
   def assert_has_local_id(page, expected_id)
     assert_equal expected_id, page.local_id
   end
@@ -226,6 +240,14 @@ class TestPage < Test::Unit::TestCase
 
   def assert_page_title_string_equal(page, expected_title_string, message=nil)
     assert_equal expected_title_string, page.title_string, message
+  end
+
+  def assert_is_redirect(page, message)
+    assert page.redirect, message
+  end
+
+  def assert_is_not_redirect(page, message)
+    assert (not page.redirect), message
   end
 
 end

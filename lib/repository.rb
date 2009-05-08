@@ -1,5 +1,7 @@
 $REPOSITORY_DEBUG_MODE = false
 
+require "tempfile"
+
 class Repository < ActiveRecord::Base
 
   has_many :pages
@@ -26,14 +28,22 @@ class Repository < ActiveRecord::Base
   def commit_statements
     raise "Can't happen" if @statements_to_be_executed.nil?
     STDERR.puts "About to commit #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
-    begin
-      ActiveRecord::Base.connection.execute "Begin"
-      @statements_to_be_executed.each {|statement| ActiveRecord::Base.connection.execute statement}
-    ensure
-      ActiveRecord::Base.connection.execute "Commit"
-    end
+    commit_statements_via_command_line
     STDERR.puts "Committed #{@statements_to_be_executed.size} statements at #{Time.now}" if $REPOSITORY_DEBUG_MODE
     @statements_to_be_executed = []
+  end
+
+  def commit_statements_via_command_line
+    raise "Unknown database" unless ["sqlite3"].include?($dbconfig["adapter"])
+    temp_file = Tempfile.new("commit_statements.sqlite3") #Block form not available?
+      temp_file.puts "PRAGMA SYNCHRONOUS = OFF;"
+      temp_file.puts "Begin;"
+      @statements_to_be_executed.each {|statement| temp_file.puts statement + ";"}
+      temp_file.puts "Commit;"
+    temp_file.close
+    success = system("sqlite3 #{$dbconfig["database"]} < #{temp_file.path}")
+    raise "sqlite3 failure" unless success
+    File.delete temp_file if File.exist?(temp_file.path)
   end
 
   def new_page_if_valid(title, page_id)

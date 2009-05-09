@@ -43,7 +43,7 @@ class Repository < ActiveRecord::Base
     temp_file.close
     success = system("sqlite3 #{$dbconfig["database"]} < #{temp_file.path}")
     raise "sqlite3 failure" unless success
-    File.delete temp_file if File.exist?(temp_file.path)
+    File.delete temp_file.path if File.exist?(temp_file.path)
   end
 
   def new_page_if_valid(title, page_id)
